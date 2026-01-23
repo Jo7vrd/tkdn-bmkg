@@ -1,41 +1,38 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { LogIn, Mail, Lock, ArrowRight } from 'lucide-react'
+import { useState } from 'react';
+import Link from 'next/link';
+import { LogIn, Mail, Lock, ArrowRight } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function LoginPage() {
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
-  })
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  });
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-    setError('')
-  }
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setError('');
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError('')
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
 
-    try {
-      // TODO: API call to login
-      await new Promise(resolve => setTimeout(resolve, 1500)) // Simulate API
-      
-      // Simulate success - redirect to dashboard
-      window.location.href = '/home'
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      setError('Email atau password salah')
-    } finally {
-      setIsLoading(false)
+    const result = await login(formData.email, formData.password);
+    
+    if (!result.success) {
+      setError(result.error);
+      setIsLoading(false);
     }
-  }
+    // Jika berhasil, redirect sudah dihandle di AuthContext
+  };
 
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-600 via-indigo-700 to-purple-800 flex items-center justify-center px-4 py-12">
@@ -167,5 +164,5 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
-  )
+  );
 }

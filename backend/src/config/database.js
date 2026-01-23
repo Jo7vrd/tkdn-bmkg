@@ -1,44 +1,23 @@
-import mysql from 'mysql2/promise';
-import dotenv from 'dotenv';
+// config/database.js
+import pg from 'pg';
+const { Pool } = pg;
 
-dotenv.config();
-
-// Database connection pool
-const pool = mysql.createPool({
+const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 3306,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  enableKeepAlive: true,
-  keepAliveInitialDelay: 0,
+  port: process.env.DB_PORT || 5432,
+  database: process.env.DB_NAME || 'bmkg_p3dn',
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'your_password',
 });
 
-// Test database connection
-export const testConnection = async () => {
-  try {
-    const connection = await pool.getConnection();
+// Test connection
+pool.connect((err, client, release) => {
+  if (err) {
+    console.error('❌ Error connecting to database:', err.stack);
+  } else {
     console.log('✅ Database connected successfully');
-    connection.release();
-    return true;
-  } catch (error) {
-    console.error('❌ Database connection failed:', error.message);
-    return false;
+    release();
   }
-};
-
-// Execute query with automatic connection handling
-export const query = async (sql, params = []) => {
-  try {
-    const [results] = await pool.execute(sql, params);
-    return results;
-  } catch (error) {
-    console.error('Database query error:', error);
-    throw error;
-  }
-};
+});
 
 export default pool;

@@ -3,8 +3,35 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, UserPlus, Building, Phone, Mail, IdCard, Briefcase } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
+
+// PINDAHKAN InputField KE LUAR - INI YANG PENTING!
+const InputField = ({ icon: Icon, label, name, type = 'text', placeholder, required = true, value, onChange, error }) => (
+  <div>
+    <label className="block text-sm font-semibold text-gray-700 mb-2">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    <div className="relative">
+      <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+          error ? 'border-red-500' : 'border-gray-200'
+        }`}
+        placeholder={placeholder}
+      />
+    </div>
+    {error && (
+      <p className="mt-1 text-sm text-red-600">{error}</p>
+    )}
+  </div>
+)
 
 export default function RegisterPage() {
+  const { register } = useAuth()
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -23,7 +50,6 @@ export default function RegisterPage() {
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
-    // Clear error when user types
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }))
     }
@@ -62,41 +88,20 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
-      // TODO: API call to register
-      await new Promise(resolve => setTimeout(resolve, 1500)) // Simulate API
+      const result = await register(formData)
       
-      alert('Registrasi berhasil! Silakan login.')
-      window.location.href = '/login'
+      if (result.success) {
+        alert('Registrasi berhasil! Silakan login.')
+        window.location.href = '/login'
+      } else {
+        alert('Registrasi gagal: ' + result.error)
+      }
     } catch (error) {
       alert('Registrasi gagal: ' + error.message)
     } finally {
       setIsLoading(false)
     }
   }
-
-  const InputField = ({ icon: Icon, label, name, type = 'text', placeholder, required = true }) => (
-    <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-2">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      <div className="relative">
-        <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-        <input
-          type={type}
-          name={name}
-          value={formData[name]}
-          onChange={handleChange}
-          className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-            errors[name] ? 'border-red-500' : 'border-gray-200'
-          }`}
-          placeholder={placeholder}
-        />
-      </div>
-      {errors[name] && (
-        <p className="mt-1 text-sm text-red-600">{errors[name]}</p>
-      )}
-    </div>
-  )
 
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4">
@@ -147,6 +152,9 @@ export default function RegisterPage() {
                 label="Username"
                 name="username"
                 placeholder="username"
+                value={formData.username}
+                onChange={handleChange}
+                error={errors.username}
               />
 
               <InputField
@@ -155,6 +163,9 @@ export default function RegisterPage() {
                 name="email"
                 type="email"
                 placeholder="nama@bmkg.go.id"
+                value={formData.email}
+                onChange={handleChange}
+                error={errors.email}
               />
 
               <InputField
@@ -163,6 +174,9 @@ export default function RegisterPage() {
                 name="password"
                 type="password"
                 placeholder="Minimal 6 karakter"
+                value={formData.password}
+                onChange={handleChange}
+                error={errors.password}
               />
 
               <InputField
@@ -171,6 +185,9 @@ export default function RegisterPage() {
                 name="confirmPassword"
                 type="password"
                 placeholder="Ketik ulang password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                error={errors.confirmPassword}
               />
 
               {/* Personal Info */}
@@ -186,6 +203,9 @@ export default function RegisterPage() {
                 label="Nama Lengkap"
                 name="full_name"
                 placeholder="Nama lengkap sesuai NIP"
+                value={formData.full_name}
+                onChange={handleChange}
+                error={errors.full_name}
               />
 
               <InputField
@@ -193,6 +213,9 @@ export default function RegisterPage() {
                 label="NIP"
                 name="nip"
                 placeholder="18 digit NIP"
+                value={formData.nip}
+                onChange={handleChange}
+                error={errors.nip}
               />
 
               <InputField
@@ -201,6 +224,9 @@ export default function RegisterPage() {
                 name="phone"
                 type="tel"
                 placeholder="08xxxxxxxxxx"
+                value={formData.phone}
+                onChange={handleChange}
+                error={errors.phone}
               />
 
               <InputField
@@ -208,6 +234,9 @@ export default function RegisterPage() {
                 label="Unit Kerja"
                 name="unit_kerja"
                 placeholder="Contoh: Stasiun Meteorologi Kemayoran"
+                value={formData.unit_kerja}
+                onChange={handleChange}
+                error={errors.unit_kerja}
               />
 
               <InputField
@@ -215,6 +244,9 @@ export default function RegisterPage() {
                 label="Jabatan"
                 name="jabatan"
                 placeholder="Contoh: Kepala Seksi Data"
+                value={formData.jabatan}
+                onChange={handleChange}
+                error={errors.jabatan}
               />
 
               <InputField
@@ -223,6 +255,9 @@ export default function RegisterPage() {
                 name="ppk_name"
                 placeholder="Nama Pejabat Pembuat Komitmen"
                 required={false}
+                value={formData.ppk_name}
+                onChange={handleChange}
+                error={errors.ppk_name}
               />
             </div>
 

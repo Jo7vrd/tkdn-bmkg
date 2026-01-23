@@ -842,7 +842,7 @@ export default function EvaluatePage() {
   );
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4">
+    <div className="min-h-screen pt-20 bg-linear-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4">
       <div className="max-w-5xl mx-auto">
         <Link
           href="/"
