@@ -59,7 +59,7 @@ export default function InfoPage() {
   ];
 
   return (
-    <div className="min-h-screen pt-20 bg-linear-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4">
+    <div className="min-h-screen pt-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Back Button */}
         <Link
@@ -71,7 +71,7 @@ export default function InfoPage() {
         </Link>
 
         {/* Header */}
-        <div className="relative overflow-hidden bg-linear-to-br from-blue-600 via-indigo-700 to-purple-800 animate-gradient-slow rounded-2xl p-8 md:p-12 text-white mb-8 animate-fade-in">
+        <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 animate-gradient-slow rounded-2xl p-8 md:p-12 text-white mb-8 animate-fade-in">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Tentang TKDN</h1>
           <p className="text-xl text-blue-100 max-w-3xl">
             Tingkat Komponen Dalam Negeri (TKDN) adalah besaran kandungan lokal
@@ -114,7 +114,7 @@ export default function InfoPage() {
                 Rumus Perhitungan TKDN
               </h2>
 
-              <div className="bg-linear-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 mb-6">
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 mb-6">
                 <div className="text-center mb-4">
                   <p className="text-2xl font-mono font-bold text-gray-800 mb-2">
                     TKDN = (HBJ - HKL) / HBJ × 100%
@@ -214,7 +214,7 @@ export default function InfoPage() {
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-linear-to-br from-blue-50 to-blue-100 border-2 border-blue-300 rounded-xl p-6 text-center">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-300 rounded-xl p-6 text-center">
                   <div className="text-5xl font-bold text-blue-600 mb-2">
                     25%
                   </div>
@@ -226,7 +226,7 @@ export default function InfoPage() {
                   </p>
                 </div>
 
-                <div className="bg-linear-to-br from-purple-50 to-purple-100 border-2 border-purple-300 rounded-xl p-6 text-center">
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-300 rounded-xl p-6 text-center">
                   <div className="text-5xl font-bold text-purple-600 mb-2">
                     40%
                   </div>
@@ -309,7 +309,7 @@ export default function InfoPage() {
             </div>
 
             {/* CTA */}
-            <div className="relative overflow-hidden bg-linear-to-br from-blue-600 via-indigo-700 to-purple-800 animate-gradient-slow rounded-2xl p-6 text-white animate-fade-in">
+            <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 animate-gradient-slow rounded-2xl p-6 text-white animate-fade-in">
               <h3 className="font-bold text-lg mb-2">Siap Evaluasi?</h3>
               <p className="text-sm text-blue-100 mb-4">
                 Gunakan kalkulator kami untuk mengevaluasi TKDN produk Anda

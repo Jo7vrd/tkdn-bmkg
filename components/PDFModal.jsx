@@ -1,15 +1,28 @@
 'use client';
 
 import { X, Download, ExternalLink } from 'lucide-react';
+import { useEffect } from 'react';
 
 export default function PDFModal({ isOpen, onClose, pdfUrl, title }) {
+  // Handle ESC key
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b bg-linear-to-r from-blue-600 to-indigo-700">
+        <div className="flex items-center justify-between px-6 py-4 border-b bg-gradient-to-r from-blue-600 to-indigo-700">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
               <ExternalLink className="w-5 h-5 text-white" />
@@ -68,13 +81,4 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, title }) {
       </div>
     </div>
   );
-}
-
-// Hook untuk close dengan ESC key
-if (typeof window !== 'undefined') {
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      // Close modal logic handled by parent component
-    }
-  });
 }

@@ -58,7 +58,7 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-linear-to-br from-blue-600 via-indigo-700 to-purple-800 text-white overflow-hidden animate-gradient-wave flowing-gradient-bg">
+      <section className="relative bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 text-white overflow-hidden animate-gradient-wave flowing-gradient-bg">
         <div className="gradient-layer-3" />
         <div className="absolute inset-0 bg-grid-white/[0.05] bg-size-[20px_20px] z-10" />
         <div className="container mx-auto px-4 py-20 md:py-32 relative z-20">
@@ -72,7 +72,7 @@ export default function Home() {
 
             <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
               Evaluasi TKDN Produk Anda
-              <span className="block text-transparent bg-clip-text bg-linear-to-r from-blue-200 to-purple-200">
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-purple-200">
                 Dengan Mudah & Akurat
               </span>
             </h1>
@@ -139,7 +139,7 @@ export default function Home() {
                   className="group bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 animate-fade-in"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <div className="w-14 h-14 bg-linear-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <Icon className="w-7 h-7 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">
@@ -171,7 +171,7 @@ export default function Home() {
               return (
                 <div
                   key={index}
-                  className="bg-linear-to-br from-gray-50 to-white border-2 border-gray-200 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                  className="bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                 >
                   <div className="flex items-center space-x-3 mb-4">
                     <div
@@ -197,7 +197,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative bg-linear-to-br from-blue-600 via-indigo-700 to-purple-800 text-white overflow-hidden animate-gradient-wave flowing-gradient-bg">
+      <section className="relative bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 text-white overflow-hidden animate-gradient-wave flowing-gradient-bg">
         <div className="gradient-layer-3" />
         <div className="absolute inset-0 bg-grid-white/[0.05] bg-size-[20px_20px] z-10" />
         <div className="container mx-auto px-4 py-20 relative z-20 text-center">

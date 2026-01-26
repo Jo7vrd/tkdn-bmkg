@@ -30,13 +30,6 @@ export default function StatusBadge({ status, small = false }) {
       text: 'text-red-700',
       border: 'border-red-200',
     },
-    sanggah: {
-      label: 'Masa Sanggah',
-      icon: AlertCircle,
-      bg: 'bg-orange-100',
-      text: 'text-orange-700',
-      border: 'border-orange-200',
-    },
   };
 
   const config = statusConfig[status] || statusConfig.pending;

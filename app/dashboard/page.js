@@ -5,18 +5,13 @@ import Link from 'next/link';
 import {
   FileText,
   Calendar,
-  AlertCircle,
   Plus,
   Clock,
   Eye,
   CheckCircle,
   XCircle,
 } from 'lucide-react';
-import {
-  getEvaluations,
-  getRemainingDays,
-  checkSanggahExpired,
-} from '../../lib/storage';
+import { getEvaluations } from '../../lib/storage';
 import StatusBadge from '../../components/statusbadge';
 
 export default function DashboardPage() {
@@ -51,7 +46,6 @@ export default function DashboardPage() {
       review: submissions.filter((s) => s.status === 'under_review').length,
       accepted: submissions.filter((s) => s.status === 'accepted').length,
       rejected: submissions.filter((s) => s.status === 'rejected').length,
-      sanggah: submissions.filter((s) => s.status === 'sanggah').length,
     };
   };
 
@@ -68,7 +62,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="text-3xl font-bold text-gray-900 mb-1">
               {summary.total}
@@ -98,12 +92,6 @@ export default function DashboardPage() {
               {summary.rejected}
             </div>
             <div className="text-sm text-red-600">Ditolak</div>
-          </div>
-          <div className="bg-orange-50 border border-orange-200 rounded-xl p-6">
-            <div className="text-3xl font-bold text-orange-700 mb-1">
-              {summary.sanggah}
-            </div>
-            <div className="text-sm text-orange-600">Masa Sanggah</div>
           </div>
         </div>
 
@@ -139,13 +127,6 @@ export default function DashboardPage() {
         ) : (
           <div className="space-y-4">
             {submissions.map((submission) => {
-              const isExpired =
-                submission.status === 'sanggah' &&
-                checkSanggahExpired(submission);
-              const remainingDays = submission.sanggahDeadline
-                ? getRemainingDays(submission.sanggahDeadline)
-                : 0;
-
               return (
                 <div
                   key={submission.id}
@@ -172,44 +153,6 @@ export default function DashboardPage() {
                       <span>Lihat Detail</span>
                     </button>
                   </div>
-
-                  {/* Sanggah Alert */}
-                  {submission.status === 'sanggah' && !isExpired && (
-                    <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-4">
-                      <div className="flex items-start">
-                        <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5 mr-3 shrink-0" />
-                        <div className="flex-1">
-                          <p className="font-semibold text-orange-900 mb-1">
-                            Masa Sanggah Aktif
-                          </p>
-                          <p className="text-sm text-orange-800 mb-2">
-                            Pengajuan Anda ditolak. Anda memiliki{' '}
-                            <strong>{remainingDays} hari kerja</strong> untuk
-                            mengajukan sanggahan dengan dokumen pendukung
-                            tambahan.
-                          </p>
-                          <p className="text-xs text-orange-700">
-                            Deadline: {formatDate(submission.sanggahDeadline)}
-                          </p>
-                          {!submission.sanggahSubmitted && (
-                            <Link
-                              href={`/sanggah/${submission.id}`}
-                              className="inline-flex items-center space-x-1 mt-3 bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-orange-700 transition-all"
-                            >
-                              <FileText className="w-4 h-4" />
-                              <span>Ajukan Sanggahan</span>
-                            </Link>
-                          )}
-                          {submission.sanggahSubmitted && (
-                            <div className="mt-3 text-sm text-orange-700">
-                              ✓ Sanggahan telah diajukan pada{' '}
-                              {formatDate(submission.sanggahSubmittedAt)}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
 
                   {/* Rejection Reason */}
                   {submission.status === 'rejected' &&
@@ -279,9 +222,8 @@ export default function DashboardPage() {
               <div
                 className={`px-8 py-6 sticky top-0 z-10 ${
                   selectedSubmission.status === 'accepted'
-                    ? 'bg-linear-to-r from-green-500 to-emerald-600'
-                    : selectedSubmission.status === 'rejected' ||
-                        selectedSubmission.status === 'sanggah'
+                    ? 'bg-linear-to-rrom-green-500 to-emerald-600'
+                    : selectedSubmission.status === 'rejected'
                       ? 'bg-linear-to-r from-red-500 to-rose-600'
                       : 'bg-linear-to-r from-blue-600 to-indigo-700'
                 }`}
@@ -489,38 +431,6 @@ export default function DashboardPage() {
                     )}
                   </div>
                 )}
-
-                {/* Sanggah Info */}
-                {selectedSubmission.status === 'sanggah' &&
-                  selectedSubmission.sanggahDeadline && (
-                    <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-6">
-                      <h3 className="font-bold text-lg mb-2 text-orange-900">
-                        Masa Sanggah
-                      </h3>
-                      <p className="text-sm text-orange-800 mb-2">
-                        Deadline:{' '}
-                        {formatDate(selectedSubmission.sanggahDeadline)}
-                      </p>
-                      <p className="text-sm text-orange-700">
-                        Sisa waktu:{' '}
-                        <strong>
-                          {getRemainingDays(selectedSubmission.sanggahDeadline)}{' '}
-                          hari kerja
-                        </strong>
-                      </p>
-                      {selectedSubmission.sanggahSubmitted && (
-                        <div className="mt-3 bg-orange-100 rounded-lg p-3">
-                          <p className="text-sm text-orange-900 font-semibold">
-                            ✓ Sanggahan telah diajukan
-                          </p>
-                          <p className="text-xs text-orange-700">
-                            Pada:{' '}
-                            {formatDate(selectedSubmission.sanggahSubmittedAt)}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
 
                 {/* Timeline */}
                 <div className="bg-gray-50 rounded-xl p-6">

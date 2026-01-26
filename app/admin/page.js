@@ -96,7 +96,7 @@ export default function AdminDashboard() {
     },
     {
       title: 'Ditolak',
-      value: mounted ? submissions.filter(s => s.status === 'rejected' || s.status === 'sanggah').length : 0,
+      value: mounted ? submissions.filter(s => s.status === 'rejected').length : 0,
       icon: XCircle,
       color: 'bg-red-500',
       change: '-3%'
@@ -122,7 +122,7 @@ export default function AdminDashboard() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-linear-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center">
                 <LayoutDashboard className="w-6 h-6 text-white" />
               </div>
               <div>

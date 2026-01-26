@@ -68,7 +68,7 @@ export default function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href={user?.role === 'admin' ? '/admin' : '/home'} className="flex items-center space-x-3 shrink-0">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-linear-to-br from-blue-600 to-indigo-700 shadow-lg">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 shadow-lg">
               <FileText className="w-6 h-6 text-white" />
             </div>
             <div className="flex flex-col">

@@ -15,8 +15,8 @@ export function middleware(request) {
   const adminRoutes = ['/admin'];
   const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
 
-  // User-only routes
-  const userRoutes = ['/home', '/dashboard', '/evaluate', '/history', '/info'];
+  // User-only routes (admin tidak bisa akses ini)
+  const userRoutes = ['/home', '/dashboard', '/evaluate', '/history'];
   const isUserRoute = userRoutes.some(route => pathname.startsWith(route));
 
   // Root redirect
@@ -46,30 +46,32 @@ export function middleware(request) {
 
   // Role-based access control
   if (token) {
-    // Admin mencoba akses user routes
+    // Admin mencoba akses user-only routes (redirect ke admin)
     if (role === 'admin' && isUserRoute) {
       return NextResponse.redirect(new URL('/admin', request.url));
     }
 
-    // User mencoba akses admin routes
+    // User mencoba akses admin-only routes (redirect ke home)
     if (role === 'user' && isAdminRoute) {
       return NextResponse.redirect(new URL('/home', request.url));
     }
+    
+    // Shared routes allowed for both admin and user
+    // No redirect needed for shared routes
   }
 
   return NextResponse.next();
 }
 
-// Updated config for Next.js 15
+// Updated config for Next.js 16
 export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
      * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * - _next (Next.js internals)
+     * - static files (.*, .ico, .png, .jpg, .svg, .css, .js)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next|.*\\..*|favicon.ico).*)',
   ],
 };

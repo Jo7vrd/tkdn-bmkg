@@ -193,7 +193,7 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="min-h-screen pt-20 bg-linear-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4">
+    <div className="min-h-screen pt-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -205,7 +205,7 @@ export default function HistoryPage() {
             <span>Kembali ke Beranda</span>
           </Link>
 
-          <div className="bg-linear-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 text-white">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 text-white">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-4xl font-bold mb-2 flex items-center">

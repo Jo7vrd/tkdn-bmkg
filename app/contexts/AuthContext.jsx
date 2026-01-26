@@ -14,6 +14,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const loadUser = () => {
       try {
+        if (typeof window === 'undefined') return;
+        
         const savedUser = localStorage.getItem('user');
         const token = localStorage.getItem('token');
         
@@ -22,8 +24,10 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (error) {
         console.error('Error loading user:', error);
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
+        }
       } finally {
         setLoading(false);
       }
@@ -35,6 +39,10 @@ export const AuthProvider = ({ children }) => {
   // Login function
   const login = async (email, password) => {
     try {
+      if (typeof window === 'undefined') {
+        throw new Error('Login hanya bisa dilakukan di client side');
+      }
+      
       // TODO: Replace dengan API call yang sebenarnya
       // Simulasi login
       let userData;
@@ -67,8 +75,8 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', token);
 
       // Simpan ke cookie untuk middleware
-      document.cookie = `token=${token}; path=/; max-age=86400`; // 24 jam
-      document.cookie = `role=${userData.role}; path=/; max-age=86400`;
+      document.cookie = `token=${token}; path=/; max-age=86400; SameSite=Lax`; // 24 jam
+      document.cookie = `role=${userData.role}; path=/; max-age=86400; SameSite=Lax`;
 
       setUser(userData);
 
@@ -113,12 +121,14 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = () => {
+    if (typeof window === 'undefined') return;
+    
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     
     // Hapus cookies
-    document.cookie = 'token=; path=/; max-age=0';
-    document.cookie = 'role=; path=/; max-age=0';
+    document.cookie = 'token=; path=/; max-age=0; SameSite=Lax';
+    document.cookie = 'role=; path=/; max-age=0; SameSite=Lax';
     
     setUser(null);
     router.push('/login');

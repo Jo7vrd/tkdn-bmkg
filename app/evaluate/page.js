@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   CheckCircle,
   XCircle,
@@ -57,6 +57,27 @@ export default function EvaluatePage() {
       bmp: '',
     },
   ]);
+
+  // State for custom dropdowns
+  const [openDropdown, setOpenDropdown] = useState({ index: null, field: null });
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openDropdown.index !== null && openDropdown.field !== null) {
+        const target = event.target;
+        // Check if click is outside dropdown
+        if (!target.closest('[data-dropdown]')) {
+          setOpenDropdown({ index: null, field: null });
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openDropdown]);
 
   // Step 4: Hasil Evaluasi
   const [evaluationResults, setEvaluationResults] = useState([]);
@@ -540,20 +561,49 @@ export default function EvaluatePage() {
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Satuan <span className="text-red-500">*</span>
               </label>
-              <select
-                value={item.unit}
-                onChange={(e) =>
-                  handleItemChange(index, 'unit', e.target.value)
-                }
-                className="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white cursor-pointer transition-all hover:border-gray-300 [-webkit-appearance:none] bg-no-repeat bg-position-[right_0.75rem_center] bg-[url('data:image/svg+xml;utf8,<svg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%2212%22%20height=%228%22%20viewBox=%220%200%2012%208%22><path%20fill=%22%236B7280%22%20d=%22M0%200l6%208%206-8z%22/></svg>')]"
-              >
-                <option value="">Pilih Satuan</option>
-                <option value="unit">Unit</option>
-                <option value="set">Set</option>
-                <option value="pcs">Pcs</option>
-                <option value="buah">Buah</option>
-                <option value="paket">Paket</option>
-              </select>
+              <div className="relative" data-dropdown>
+                <button
+                  type="button"
+                  onClick={() => setOpenDropdown(
+                    openDropdown.index === index && openDropdown.field === 'unit'
+                      ? { index: null, field: null }
+                      : { index, field: 'unit' }
+                  )}
+                  className="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white cursor-pointer transition-all hover:border-gray-300 text-left text-gray-900"
+                >
+                  {item.unit ? (
+                    item.unit.charAt(0).toUpperCase() + item.unit.slice(1)
+                  ) : (
+                    <span className="text-gray-400">Pilih Satuan</span>
+                  )}
+                  <svg
+                    className={`absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 transition-transform ${
+                      openDropdown.index === index && openDropdown.field === 'unit' ? 'rotate-180' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {openDropdown.index === index && openDropdown.field === 'unit' && (
+                  <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl overflow-hidden">
+                    {['unit', 'set', 'pcs', 'buah', 'paket'].map((option) => (
+                      <div
+                        key={option}
+                        onClick={() => {
+                          handleItemChange(index, 'unit', option);
+                          setOpenDropdown({ index: null, field: null });
+                        }}
+                        className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors text-gray-900 border-b border-gray-100 last:border-b-0"
+                      >
+                        {option.charAt(0).toUpperCase() + option.slice(1)}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div>
@@ -611,20 +661,50 @@ export default function EvaluatePage() {
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Kategori Industri <span className="text-red-500">*</span>
               </label>
-              <select
-                value={item.category}
-                onChange={(e) =>
-                  handleItemChange(index, 'category', e.target.value)
-                }
-                className="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white cursor-pointer transition-all hover:border-gray-300 [-webkit-appearance:none] bg-no-repeat bg-position-[right_0.75rem_center] bg-[url('data:image/svg+xml;utf8,<svg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%2212%22%20height=%228%22%20viewBox=%220%200%2012%208%22><path%20fill=%22%236B7280%22%20d=%22M0%200l6%208%206-8z%22/></svg>')]"
-              >
-                <option value="">Pilih Kategori</option>
-                {Object.entries(regulations).map(([key, val]) => (
-                  <option key={key} value={key}>
-                    {val.name} (Min TKDN {val.minTKDN}%)
-                  </option>
-                ))}
-              </select>
+              <div className="relative" data-dropdown>
+                <button
+                  type="button"
+                  onClick={() => setOpenDropdown(
+                    openDropdown.index === index && openDropdown.field === 'category'
+                      ? { index: null, field: null }
+                      : { index, field: 'category' }
+                  )}
+                  className="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white cursor-pointer transition-all hover:border-gray-300 text-left text-gray-900"
+                >
+                  {item.category ? (
+                    regulations[item.category].name + ' (Min TKDN ' + regulations[item.category].minTKDN + '%)'
+                  ) : (
+                    <span className="text-gray-400">Pilih Kategori</span>
+                  )}
+                  <svg
+                    className={`absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 transition-transform ${
+                      openDropdown.index === index && openDropdown.field === 'category' ? 'rotate-180' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {openDropdown.index === index && openDropdown.field === 'category' && (
+                  <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl overflow-hidden max-h-60 overflow-y-auto">
+                    {Object.entries(regulations).map(([key, val]) => (
+                      <div
+                        key={key}
+                        onClick={() => {
+                          handleItemChange(index, 'category', key);
+                          setOpenDropdown({ index: null, field: null });
+                        }}
+                        className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0"
+                      >
+                        <div className="font-medium text-gray-900">{val.name}</div>
+                        <div className="text-sm text-gray-500 mt-0.5">Min TKDN {val.minTKDN}%</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div>

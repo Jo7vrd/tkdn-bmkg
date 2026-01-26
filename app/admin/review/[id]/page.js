@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, CheckCircle, XCircle, FileText, AlertCircle, Calendar, User, Mail, Phone, Building, Briefcase } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, FileText, AlertCircle, Calendar, User, Mail, Phone, Building, Briefcase, Eye, Download } from 'lucide-react';
 import Link from 'next/link';
 import { getEvaluationById, updateEvaluationStatus } from '../../../../lib/storage';
+import PDFModal from '../../../../components/PDFModal';
 
 export default function ReviewSubmission({ params }) {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function ReviewSubmission({ params }) {
   });
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pdfPreview, setPdfPreview] = useState({ isOpen: false, url: '', title: '' });
 
   // Fetch data
   useEffect(() => {
@@ -40,6 +42,16 @@ export default function ReviewSubmission({ params }) {
   }, [params]);
 
   const isReviewed = submission?.status === 'accepted' || submission?.status === 'rejected';
+
+  // Document label mapping
+  const documentLabels = {
+    surat_permohonan: 'Surat Permohonan (TTD Eselon II)',
+    daftar_barang: 'Daftar Barang yang Akan Dibeli',
+    surat_kebutuhan: 'Surat Pernyataan Kebutuhan Operasional',
+    surat_tidak_terdaftar: 'Surat Pernyataan Barang Tidak Terdaftar di Kemenperin',
+    lampiran_spesifikasi: 'Lampiran Spesifikasi dan Bukti',
+    dokumen_pendukung: 'Dokumen Pendukung Lainnya (Opsional)'
+  };
 
   const handleSubmitReview = async () => {
     setIsSubmitting(true);
@@ -90,6 +102,26 @@ export default function ReviewSubmission({ params }) {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const handlePreviewDocument = (doc) => {
+    // Construct the document URL from public/documents folder
+    const docUrl = `/documents/${doc.name}`;
+    setPdfPreview({
+      isOpen: true,
+      url: docUrl,
+      title: doc.type.replace(/_/g, ' ').toUpperCase()
+    });
+  };
+
+  const handleDownloadDocument = (doc) => {
+    const docUrl = `/documents/${doc.name}`;
+    const link = document.createElement('a');
+    link.href = docUrl;
+    link.download = doc.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   if (!submission) {
@@ -263,24 +295,45 @@ export default function ReviewSubmission({ params }) {
                 Dokumen yang Diupload
               </h2>
               
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {submission.documents && submission.documents.length > 0 ? (
                   submission.documents.map((doc, idx) => (
-                    <div key={idx} className="flex items-center justify-between py-3 px-4 bg-gray-50 rounded-lg border border-gray-200">
-                      <div className="flex items-center space-x-3">
-                        <FileText className="w-5 h-5 text-blue-600" />
-                        <div>
-                          <p className="text-sm font-medium text-gray-900 capitalize">
-                            {doc.type.replace(/_/g, ' ')}
+                    <div key={idx} className="flex items-center justify-between py-3 px-4 bg-linear-to-r from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200 hover:border-blue-400 transition-all group">
+                      <div className="flex items-center space-x-3 flex-1">
+                        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                          <FileText className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-gray-900">
+                            {documentLabels[doc.type] || doc.type.replace(/_/g, ' ')}
                           </p>
-                          <p className="text-xs text-gray-500">{doc.name}</p>
+                          <p className="text-xs text-gray-600">{doc.name}</p>
                         </div>
                       </div>
-                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handlePreviewDocument(doc)}
+                          className="p-2 bg-white hover:bg-blue-100 rounded-lg border border-blue-300 transition-all group-hover:scale-110"
+                          title="Preview Dokumen"
+                        >
+                          <Eye className="w-4 h-4 text-blue-600" />
+                        </button>
+                        <button
+                          onClick={() => handleDownloadDocument(doc)}
+                          className="p-2 bg-white hover:bg-green-100 rounded-lg border border-green-300 transition-all group-hover:scale-110"
+                          title="Download Dokumen"
+                        >
+                          <Download className="w-4 h-4 text-green-600" />
+                        </button>
+                        <CheckCircle className="w-5 h-5 text-green-600 ml-2" />
+                      </div>
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-500 text-center py-4">Tidak ada dokumen</p>
+                  <div className="text-center py-8">
+                    <FileText className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                    <p className="text-gray-500 text-sm">Tidak ada dokumen</p>
+                  </div>
                 )}
               </div>
             </div>
@@ -365,7 +418,7 @@ export default function ReviewSubmission({ params }) {
 
           {/* Right Column - Review Form */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-20">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-4">
                 {isReviewed ? 'Detail Review' : 'Form Review'}
               </h2>
@@ -473,6 +526,14 @@ export default function ReviewSubmission({ params }) {
           </div>
         </div>
       </div>
+
+      {/* PDF Preview Modal */}
+      <PDFModal
+        isOpen={pdfPreview.isOpen}
+        onClose={() => setPdfPreview({ isOpen: false, url: '', title: '' })}
+        pdfUrl={pdfPreview.url}
+        title={pdfPreview.title}
+      />
     </div>
   );
 }

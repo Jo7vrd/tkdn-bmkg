@@ -76,7 +76,7 @@ export default function Header() {
       {/* Logout Confirmation Modal */}
       {showLogoutConfirm && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center px-4 animate-fade-in"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center px-4 animate-fade-in"
           onClick={() => setShowLogoutConfirm(false)}
         >
           <div
