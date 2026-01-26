@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
   CheckCircle,
@@ -13,7 +14,45 @@ import {
   Zap,
 } from 'lucide-react';
 
+// Custom hook untuk detect scroll into view
+function useInView(options = {}) {
+  const ref = useRef(null);
+  const [isInView, setIsInView] = useState(false);
+
+  useEffect(() => {
+    const currentRef = ref.current;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setIsInView(true);
+      }
+    }, {
+      threshold: 0.1,
+      ...options,
+    });
+
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, [options]);
+
+  return [ref, isInView];
+}
+
 export default function Home() {
+  const [featuresRef, featuresInView] = useInView();
+  const [categoriesRef, categoriesInView] = useInView();
+
+  // Scroll to top on page load/refresh
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const features = [
     {
       icon: Calculator,
@@ -58,7 +97,7 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 text-white overflow-hidden animate-gradient-wave flowing-gradient-bg">
+      <section className="relative text-white overflow-hidden animate-gradient-wave flowing-gradient-bg" style={{background: 'linear-gradient(to bottom right, rgb(0, 0, 205), rgb(34, 139, 34))'}}>
         <div className="gradient-layer-3" />
         <div className="absolute inset-0 bg-grid-white/[0.05] bg-size-[20px_20px] z-10" />
         <div className="container mx-auto px-4 py-20 md:py-32 relative z-20">
@@ -72,7 +111,7 @@ export default function Home() {
 
             <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
               Evaluasi TKDN Produk Anda
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-purple-200">
+              <span className="block text-transparent bg-clip-text" style={{backgroundImage: 'linear-gradient(to right, rgb(173, 216, 230), rgb(144, 238, 144))', WebkitBackgroundClip: 'text'}}>
                 Dengan Mudah & Akurat
               </span>
             </h1>
@@ -104,23 +143,27 @@ export default function Home() {
         </div>
 
         {/* Decorative elements */}
-        <div className="absolute top-20 left-10 w-125 h-125 bg-blue-400/50 rounded-full blur-[120px] animate-pulse-slow" />
-        <div className="absolute bottom-20 right-10 w-150 h-150 bg-purple-400/50 rounded-full blur-[120px] animate-pulse-slower" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-112.5 h-112.5 bg-pink-400/45 rounded-full blur-[100px] animate-float-blob" />
+        <div className="absolute top-20 left-10 w-125 h-125 rounded-full blur-[120px] animate-pulse-slow" style={{backgroundColor: 'rgba(0, 0, 205, 0.3)'}} />
+        <div className="absolute bottom-20 right-10 w-150 h-150 rounded-full blur-[120px] animate-pulse-slower" style={{backgroundColor: 'rgba(34, 139, 34, 0.3)'}} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-112.5 h-112.5 rounded-full blur-[100px] animate-float-blob" style={{backgroundColor: 'rgba(0, 100, 180, 0.25)'}} />
         <div
-          className="absolute top-10 right-20 w-100 h-100 bg-indigo-400/50 rounded-full blur-[110px] animate-pulse-slow"
-          style={{ animationDelay: '2s' }}
+          className="absolute top-10 right-20 w-100 h-100 rounded-full blur-[110px] animate-pulse-slow"
+          style={{ animationDelay: '2s', backgroundColor: 'rgba(20, 120, 50, 0.3)' }}
         />
         <div
-          className="absolute bottom-10 left-20 w-9580px] bg-cyan-400/45 rounded-full blur-[100px] animate-pulse-slower"
-          style={{ animationDelay: '1s' }}
+          className="absolute bottom-10 left-20 w-9580px] rounded-full blur-[100px] animate-pulse-slower"
+          style={{ animationDelay: '1s', backgroundColor: 'rgba(50, 150, 50, 0.25)' }}
         />
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-gray-50">
+      <section ref={featuresRef} className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
+          <div className={`text-center mb-16 transition-all duration-1000 ${
+            featuresInView 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 translate-y-10'
+          }`}>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Fitur Unggulan
             </h2>
@@ -136,10 +179,17 @@ export default function Home() {
               return (
                 <div
                   key={index}
-                  className="group bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 animate-fade-in"
-                  style={{ animationDelay: `${index * 100}ms` }}
+                  className={`group bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 ${
+                    featuresInView 
+                      ? 'opacity-100 translate-y-0' 
+                      : 'opacity-0 translate-y-10'
+                  }`}
+                  style={{ 
+                    transitionDelay: featuresInView ? `${index * 150}ms` : '0ms',
+                    transitionDuration: '1000ms'
+                  }}
                 >
-                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <div className="w-14 h-14 bg-linear-to-br from-blue-600 to-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <Icon className="w-7 h-7 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">
@@ -154,9 +204,13 @@ export default function Home() {
       </section>
 
       {/* Categories Section */}
-      <section className="py-20 bg-white">
+      <section ref={categoriesRef} className="py-20 bg-white">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
+          <div className={`text-center mb-16 transition-all duration-1000 ${
+            categoriesInView 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 translate-y-10'
+          }`}>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Kategori Industri
             </h2>
@@ -171,7 +225,15 @@ export default function Home() {
               return (
                 <div
                   key={index}
-                  className="bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                  className={`bg-linear-to-brrom-gray-50 to-white border-2 border-gray-200 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
+                    categoriesInView 
+                      ? 'opacity-100 translate-y-0' 
+                      : 'opacity-0 translate-y-10'
+                  }`}
+                  style={{ 
+                    transitionDelay: categoriesInView ? `${index * 150}ms` : '0ms',
+                    transitionDuration: '1000ms'
+                  }}
                 >
                   <div className="flex items-center space-x-3 mb-4">
                     <div
@@ -197,7 +259,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 text-white overflow-hidden animate-gradient-wave flowing-gradient-bg">
+      <section className="relative text-white overflow-hidden animate-gradient-wave flowing-gradient-bg" style={{background: 'linear-gradient(to bottom right, rgb(0, 0, 205), rgb(34, 139, 34))'}}>
         <div className="gradient-layer-3" />
         <div className="absolute inset-0 bg-grid-white/[0.05] bg-size-[20px_20px] z-10" />
         <div className="container mx-auto px-4 py-20 relative z-20 text-center">
