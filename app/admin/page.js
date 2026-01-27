@@ -8,13 +8,15 @@ import {
   CheckCircle, 
   Clock, 
   XCircle,
-  Eye
+  Eye,
+  Search
 } from 'lucide-react';
 import { getEvaluations } from '../../lib/storage';
 
 export default function AdminDashboard() {
   const [submissions, setSubmissions] = useState([]);
   const [mounted, setMounted] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
 
   // Load data after mount
   useEffect(() => {
@@ -71,32 +73,38 @@ export default function AdminDashboard() {
         );
     }
   };
-
+  // Filter submissions based on search keyword
+  const filteredSubmissions = mounted ? submissions.filter(submission => {
+    if (!searchKeyword.trim()) return true;
+    const keyword = searchKeyword.toLowerCase();
+    const ppkName = submission.ppkData?.nama_ppk?.toLowerCase() || '';
+    return ppkName.includes(keyword);
+  }) : [];
   const stats = [
     {
       title: 'Total Pengajuan',
-      value: mounted ? submissions.length : 0,
+      value: mounted ? filteredSubmissions.length : 0,
       icon: FileText,
       color: 'bg-blue-500',
       change: '+12%'
     },
     {
       title: 'Menunggu Review',
-      value: mounted ? submissions.filter(s => s.status === 'pending' || s.status === 'under_review').length : 0,
+      value: mounted ? filteredSubmissions.filter(s => s.status === 'pending' || s.status === 'under_review').length : 0,
       icon: Clock,
       color: 'bg-yellow-500',
       change: '+5%'
     },
     {
       title: 'Disetujui',
-      value: mounted ? submissions.filter(s => s.status === 'accepted').length : 0,
+      value: mounted ? filteredSubmissions.filter(s => s.status === 'accepted').length : 0,
       icon: CheckCircle,
       color: 'bg-green-500',
       change: '+8%'
     },
     {
       title: 'Ditolak',
-      value: mounted ? submissions.filter(s => s.status === 'rejected').length : 0,
+      value: mounted ? filteredSubmissions.filter(s => s.status === 'rejected').length : 0,
       icon: XCircle,
       color: 'bg-red-500',
       change: '-3%'
@@ -164,18 +172,51 @@ export default function AdminDashboard() {
         {/* Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-bold text-gray-900">Daftar Pengajuan</h2>
-            <p className="text-sm text-gray-500 mt-1">Kelola semua pengajuan evaluasi TKDN</p>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Daftar Pengajuan</h2>
+                <p className="text-sm text-gray-500 mt-1">Kelola semua pengajuan evaluasi TKDN</p>
+              </div>
+            </div>
+            
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                placeholder="Cari berdasarkan nama PPK..."
+                className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              />
+            </div>
           </div>
 
           <div className="overflow-x-auto">
-            {submissions.length === 0 ? (
+            {filteredSubmissions.length === 0 ? (
               <div className="text-center py-12">
                 <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 text-lg font-semibold">Belum ada pengajuan</p>
-                <p className="text-gray-400 text-sm mt-2">Pengajuan dari user akan muncul di sini</p>
+                {searchKeyword.trim() ? (
+                  <>
+                    <p className="text-gray-500 text-lg font-semibold">Tidak ada hasil ditemukan</p>
+                    <p className="text-gray-400 text-sm mt-2">Coba kata kunci pencarian lain</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-gray-500 text-lg font-semibold">Belum ada pengajuan</p>
+                    <p className="text-gray-400 text-sm mt-2">Pengajuan dari user akan muncul di sini</p>
+                  </>
+                )}
               </div>
             ) : (
+              <>
+                {searchKeyword.trim() && (
+                  <div className="px-6 py-2 bg-blue-50 border-b border-blue-100">
+                    <p className="text-sm text-blue-700">
+                      Menampilkan {filteredSubmissions.length} hasil dari {submissions.length} total pengajuan
+                    </p>
+                  </div>
+                )}
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
@@ -206,7 +247,7 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {submissions.map((submission) => (
+                  {filteredSubmissions.map((submission) => (
                     <tr key={submission.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-medium text-gray-900">#{submission.id.slice(-6)}</span>
@@ -257,14 +298,15 @@ export default function AdminDashboard() {
                   ))}
                 </tbody>
               </table>
+              </>
             )}
           </div>
 
           {/* Pagination */}
-          {submissions.length > 0 && (
+          {filteredSubmissions.length > 0 && (
             <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
               <div className="text-sm text-gray-600">
-                Menampilkan <span className="font-semibold">1-{submissions.length}</span> dari <span className="font-semibold">{submissions.length}</span> pengajuan
+                Menampilkan <span className="font-semibold">1-{filteredSubmissions.length}</span> dari <span className="font-semibold">{submissions.length}</span> pengajuan
               </div>
               <div className="flex space-x-2">
                 <button className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>

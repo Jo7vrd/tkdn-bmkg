@@ -29,7 +29,7 @@ export default function Header() {
     return [
       { href: '/home', label: 'Beranda', icon: Home },
       { href: '/evaluate', label: 'Evaluasi', icon: Calculator },
-      { href: '/dashboard', label: 'Dashboard', icon: FileText },
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/history', label: 'Riwayat', icon: History },
       { href: '/info', label: 'Informasi', icon: Info },
     ];
@@ -84,7 +84,7 @@ export default function Header() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header dengan gradient */}
-            <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4">
+            <div className="bg-linear-to-r from-red-500 to-red-600 px-6 py-4">
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                   <AlertTriangle className="w-6 h-6 text-white" />
@@ -127,7 +127,7 @@ export default function Header() {
                     setShowLogoutConfirm(false);
                     logout();
                   }}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-semibold hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg shadow-red-200 active:scale-95 flex items-center justify-center space-x-2"
+                  className="flex-1 px-4 py-3 bg-linear-to-r from-red-600 to-red-700 text-white rounded-xl font-semibold hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg shadow-red-200 active:scale-95 flex items-center justify-center space-x-2"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Ya, Logout</span>
@@ -147,7 +147,7 @@ export default function Header() {
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link href={user?.role === 'admin' ? '/admin' : '/home'} className="flex items-center space-x-3 shrink-0">
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 shadow-lg">
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-linear-to-br from-blue-600 to-indigo-700 shadow-lg">
                 <FileText className="w-6 h-6 text-white" />
               </div>
               <div className="flex flex-col">
