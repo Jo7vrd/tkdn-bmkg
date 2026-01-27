@@ -47,6 +47,7 @@ function useInView(options = {}) {
 export default function Home() {
   const [featuresRef, featuresInView] = useInView();
   const [categoriesRef, categoriesInView] = useInView();
+  const [isRegulationExpanded, setIsRegulationExpanded] = useState(false);
 
   // Scroll to top on page load/refresh
   useEffect(() => {
@@ -102,26 +103,41 @@ export default function Home() {
         <div className="absolute inset-0 bg-grid-white/[0.05] bg-size-[20px_20px] z-10" />
         <div className="container mx-auto px-4 py-20 md:py-32 relative z-20">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
-            <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-              <CheckCircle className="w-4 h-4" />
-              <span className="text-sm font-medium">
-                Sesuai PP No. 29 Tahun 2018
-              </span>
+            <div 
+              className="inline-block mb-6 group cursor-pointer"
+              onMouseEnter={() => setIsRegulationExpanded(true)}
+              onMouseLeave={() => setIsRegulationExpanded(false)}
+            >
+              <div className={`inline-flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 transition-all duration-300 ${
+                isRegulationExpanded ? 'bg-white/20 shadow-lg' : 'hover:bg-white/15'
+              }`}>
+                <CheckCircle className="w-4 h-4" />
+                <span className="text-sm font-medium">
+                  Sesuai PP No. 29 Tahun 2018
+                </span>
+              </div>
+              <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                isRegulationExpanded ? 'max-h-10 opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'
+              }`}>
+                <div className="text-xs text-blue-100 opacity-90">
+                  Peraturan Pemerintah tentang Kebijakan Industri Nasional
+                </div>
+              </div>
             </div>
 
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight transition-all duration-500 ease-in-out">
               Evaluasi TKDN Produk Anda
               <span className="block text-transparent bg-clip-text" style={{backgroundImage: 'linear-gradient(to right, rgb(173, 216, 230), rgb(144, 238, 144))', WebkitBackgroundClip: 'text'}}>
                 Dengan Mudah & Akurat
               </span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-2xl mx-auto transition-all duration-500 ease-in-out">
               Sistem evaluasi Tingkat Komponen Dalam Negeri untuk memastikan
               produk Anda memenuhi persyaratan pengadaan barang/jasa pemerintah
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center transition-all duration-500 ease-in-out">
               <Link
                 href="/evaluate"
                 className="group inline-flex items-center justify-center space-x-2 bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-2xl hover:scale-105 transition-all"
@@ -179,17 +195,19 @@ export default function Home() {
               return (
                 <div
                   key={index}
-                  className={`group bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 ${
+                  className={`group bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 ${
                     featuresInView 
                       ? 'opacity-100 translate-y-0' 
                       : 'opacity-0 translate-y-10'
                   }`}
-                  style={{ 
-                    transitionDelay: featuresInView ? `${index * 150}ms` : '0ms',
-                    transitionDuration: '1000ms'
+                  style={{
+                    transition: featuresInView 
+                      ? 'transform 300ms ease-in-out, box-shadow 300ms ease-in-out, opacity 1000ms ease-in-out'
+                      : 'transform 1000ms ease-in-out, opacity 1000ms ease-in-out',
+                    transitionDelay: featuresInView ? `0ms, 0ms, ${index * 150}ms` : `${index * 150}ms, ${index * 150}ms`
                   }}
                 >
-                  <div className="w-14 h-14 bg-linear-to-br from-blue-600 to-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <div className="w-14 h-14 bg-linear-to-br from-blue-600 to-green-600 rounded-xl flex items-center justify-center mb-4">
                     <Icon className="w-7 h-7 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">
@@ -225,14 +243,16 @@ export default function Home() {
               return (
                 <div
                   key={index}
-                  className={`bg-linear-to-brrom-gray-50 to-white border-2 border-gray-200 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
+                  className={`bg-linear-to-brrom-gray-50 to-white border-2 border-gray-200 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 ${
                     categoriesInView 
                       ? 'opacity-100 translate-y-0' 
                       : 'opacity-0 translate-y-10'
                   }`}
-                  style={{ 
-                    transitionDelay: categoriesInView ? `${index * 150}ms` : '0ms',
-                    transitionDuration: '1000ms'
+                  style={{
+                    transition: categoriesInView 
+                      ? 'transform 300ms ease-in-out, box-shadow 300ms ease-in-out, opacity 1000ms ease-in-out'
+                      : 'transform 1000ms ease-in-out, opacity 1000ms ease-in-out',
+                    transitionDelay: categoriesInView ? `0ms, 0ms, ${index * 150}ms` : `${index * 150}ms, ${index * 150}ms`
                   }}
                 >
                   <div className="flex items-center space-x-3 mb-4">
