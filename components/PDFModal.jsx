@@ -11,7 +11,7 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, title, fileType }) {
         onClose();
       }
     };
-    
+
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
   }, [isOpen, onClose]);
@@ -19,7 +19,11 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, title, fileType }) {
   if (!isOpen) return null;
 
   // Determine if it's a Word document
-  const isWordDoc = fileType && (fileType.includes('word') || fileType.includes('msword') || fileType.includes('document'));
+  const isWordDoc =
+    fileType &&
+    (fileType.includes('word') ||
+      fileType.includes('msword') ||
+      fileType.includes('document'));
   const isPDF = fileType && fileType.includes('pdf');
 
   return (
@@ -70,8 +74,8 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, title, fileType }) {
                   Preview Dokumen Word
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  Browser tidak dapat menampilkan preview langsung untuk file Word. 
-                  Silakan download file untuk melihat isinya.
+                  Browser tidak dapat menampilkan preview langsung untuk file
+                  Word. Silakan download file untuk melihat isinya.
                 </p>
                 <div className="space-y-3">
                   <a
@@ -82,9 +86,7 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, title, fileType }) {
                     <Download className="w-5 h-5" />
                     <span>Download Dokumen</span>
                   </a>
-                  <p className="text-sm text-gray-500">
-                    File: {title}
-                  </p>
+                  <p className="text-sm text-gray-500">File: {title}</p>
                 </div>
               </div>
             </div>

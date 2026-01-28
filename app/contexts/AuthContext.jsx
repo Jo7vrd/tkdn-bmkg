@@ -15,10 +15,10 @@ export const AuthProvider = ({ children }) => {
     const loadUser = () => {
       try {
         if (typeof window === 'undefined') return;
-        
+
         const savedUser = localStorage.getItem('user');
         const token = localStorage.getItem('token');
-        
+
         if (savedUser && token) {
           setUser(JSON.parse(savedUser));
         }
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
       if (typeof window === 'undefined') {
         throw new Error('Login hanya bisa dilakukan di client side');
       }
-      
+
       // TODO: Replace dengan API call yang sebenarnya
       // Simulasi login
       let userData;
@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }) => {
           email: 'admin@bmkg.go.id',
           username: 'admin',
           role: 'admin',
-          full_name: 'Administrator BMKG'
+          full_name: 'Administrator BMKG',
         };
         token = 'admin-token-12345';
       } else if (email === 'testuser@bmkg.go.id' && password === 'user123') {
@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }) => {
           email: 'testuser@bmkg.go.id',
           username: 'testuser',
           role: 'user',
-          full_name: 'Test User BMKG'
+          full_name: 'Test User BMKG',
         };
         token = 'user-token-67890';
       } else {
@@ -98,7 +98,7 @@ export const AuthProvider = ({ children }) => {
     try {
       // TODO: Replace dengan API call yang sebenarnya
       // Simulasi registrasi
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // For future use when connected to backend
       // const userData = {
@@ -122,14 +122,14 @@ export const AuthProvider = ({ children }) => {
   // Logout function
   const logout = () => {
     if (typeof window === 'undefined') return;
-    
+
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    
+
     // Hapus cookies
     document.cookie = 'token=; path=/; max-age=0; SameSite=Lax';
     document.cookie = 'role=; path=/; max-age=0; SameSite=Lax';
-    
+
     setUser(null);
     router.push('/login');
   };
@@ -150,7 +150,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     hasRole,
-    isAuthenticated: !!user
+    isAuthenticated: !!user,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export function middleware(request) {
   const { pathname } = request.nextUrl;
-  
+
   // Ambil token dan role dari cookies
   const token = request.cookies.get('token')?.value;
   const role = request.cookies.get('role')?.value;
@@ -13,11 +13,11 @@ export function middleware(request) {
 
   // Admin-only routes
   const adminRoutes = ['/admin'];
-  const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
+  const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route));
 
   // User-only routes (admin tidak bisa akses ini)
   const userRoutes = ['/home', '/dashboard', '/evaluate', '/history'];
-  const isUserRoute = userRoutes.some(route => pathname.startsWith(route));
+  const isUserRoute = userRoutes.some((route) => pathname.startsWith(route));
 
   // Root redirect
   if (pathname === '/') {
@@ -55,7 +55,7 @@ export function middleware(request) {
     if (role === 'user' && isAdminRoute) {
       return NextResponse.redirect(new URL('/home', request.url));
     }
-    
+
     // Shared routes allowed for both admin and user
     // No redirect needed for shared routes
   }

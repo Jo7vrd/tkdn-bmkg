@@ -7,31 +7,38 @@ import pool from '../config/database.js';
 export const register = async (req, res) => {
   try {
     const {
-      username, email, password, full_name, nip, 
-      phone, unit_kerja, jabatan, ppk_name
+      username,
+      email,
+      password,
+      full_name,
+      nip,
+      phone,
+      unit_kerja,
+      jabatan,
+      ppk_name,
     } = req.body;
 
     // 1. Validasi input
     if (!username || !email || !password || !full_name || !nip) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Semua field wajib diisi' 
+      return res.status(400).json({
+        success: false,
+        message: 'Semua field wajib diisi',
       });
     }
 
     // 2. Validasi email BMKG
     if (!email.endsWith('@bmkg.go.id')) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Email harus menggunakan domain @bmkg.go.id' 
+      return res.status(400).json({
+        success: false,
+        message: 'Email harus menggunakan domain @bmkg.go.id',
       });
     }
 
     // 3. Validasi password minimal 6 karakter
     if (password.length < 6) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Password minimal 6 karakter' 
+      return res.status(400).json({
+        success: false,
+        message: 'Password minimal 6 karakter',
       });
     }
 
@@ -42,9 +49,9 @@ export const register = async (req, res) => {
     );
 
     if (checkUser.rows.length > 0) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Email atau username sudah terdaftar' 
+      return res.status(400).json({
+        success: false,
+        message: 'Email atau username sudah terdaftar',
       });
     }
 
@@ -58,21 +65,30 @@ export const register = async (req, res) => {
       (username, email, password, full_name, nip, phone, unit_kerja, jabatan, ppk_name) 
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
       RETURNING id, username, email, full_name, role`,
-      [username, email, hashedPassword, full_name, nip, phone, unit_kerja, jabatan, ppk_name]
+      [
+        username,
+        email,
+        hashedPassword,
+        full_name,
+        nip,
+        phone,
+        unit_kerja,
+        jabatan,
+        ppk_name,
+      ]
     );
 
     res.status(201).json({
       success: true,
       message: 'Registrasi berhasil',
-      data: result.rows[0]
+      data: result.rows[0],
     });
-
   } catch (error) {
     console.error('Register error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Terjadi kesalahan server',
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -84,22 +100,21 @@ export const login = async (req, res) => {
 
     // 1. Validasi input
     if (!email || !password) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Email dan password wajib diisi' 
+      return res.status(400).json({
+        success: false,
+        message: 'Email dan password wajib diisi',
       });
     }
 
     // 2. Cari user berdasarkan email
-    const result = await pool.query(
-      'SELECT * FROM users WHERE email = $1',
-      [email]
-    );
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [
+      email,
+    ]);
 
     if (result.rows.length === 0) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Email atau password salah' 
+      return res.status(401).json({
+        success: false,
+        message: 'Email atau password salah',
       });
     }
 
@@ -107,28 +122,28 @@ export const login = async (req, res) => {
 
     // 3. Cek apakah akun aktif
     if (!user.is_active) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Akun Anda tidak aktif. Hubungi admin.' 
+      return res.status(403).json({
+        success: false,
+        message: 'Akun Anda tidak aktif. Hubungi admin.',
       });
     }
 
     // 4. Verifikasi password
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    
+
     if (!isPasswordValid) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Email atau password salah' 
+      return res.status(401).json({
+        success: false,
+        message: 'Email atau password salah',
       });
     }
 
     // 5. Generate JWT token
     const token = jwt.sign(
-      { 
-        id: user.id, 
-        email: user.email, 
-        role: user.role 
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
       },
       process.env.JWT_SECRET || 'your-secret-key-change-this',
       { expiresIn: '24h' }
@@ -141,15 +156,14 @@ export const login = async (req, res) => {
       success: true,
       message: 'Login berhasil',
       token,
-      user
+      user,
     });
-
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Terjadi kesalahan server',
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -164,22 +178,21 @@ export const getProfile = async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User tidak ditemukan' 
+      return res.status(404).json({
+        success: false,
+        message: 'User tidak ditemukan',
       });
     }
 
     res.json({
       success: true,
-      data: result.rows[0]
+      data: result.rows[0],
     });
-
   } catch (error) {
     console.error('Get profile error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Terjadi kesalahan server' 
+    res.status(500).json({
+      success: false,
+      message: 'Terjadi kesalahan server',
     });
   }
 };

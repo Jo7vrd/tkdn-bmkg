@@ -9,14 +9,14 @@ export default function LoginPage() {
   const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     setError('');
   };
 
@@ -26,7 +26,7 @@ export default function LoginPage() {
     setError('');
 
     const result = await login(formData.email, formData.password);
-    
+
     if (!result.success) {
       setError(result.error);
       setIsLoading(false);
@@ -102,7 +102,10 @@ export default function LoginPage() {
             {/* Remember Me */}
             <div className="flex items-center">
               <label className="flex items-center">
-                <input type="checkbox" className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
                 <span className="ml-2 text-sm text-gray-600">Ingat saya</span>
               </label>
             </div>
@@ -147,10 +150,16 @@ export default function LoginPage() {
 
           {/* Demo Accounts */}
           <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-            <p className="text-xs text-yellow-800 font-semibold mb-2">Demo Accounts:</p>
+            <p className="text-xs text-yellow-800 font-semibold mb-2">
+              Demo Accounts:
+            </p>
             <div className="text-xs text-yellow-700 space-y-1">
-              <p><strong>Admin:</strong> admin@bmkg.go.id / admin123</p>
-              <p><strong>User:</strong> testuser@bmkg.go.id / user123</p>
+              <p>
+                <strong>Admin:</strong> admin@bmkg.go.id / admin123
+              </p>
+              <p>
+                <strong>User:</strong> testuser@bmkg.go.id / user123
+              </p>
             </div>
           </div>
         </div>

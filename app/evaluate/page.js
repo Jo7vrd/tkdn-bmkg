@@ -59,7 +59,10 @@ export default function EvaluatePage() {
   ]);
 
   // State for custom dropdowns
-  const [openDropdown, setOpenDropdown] = useState({ index: null, field: null });
+  const [openDropdown, setOpenDropdown] = useState({
+    index: null,
+    field: null,
+  });
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -436,7 +439,8 @@ export default function EvaluatePage() {
           <div className="text-sm text-yellow-900">
             <p className="font-semibold mb-1">Dokumen Pendukung</p>
             <p>
-              Upload semua dokumen yang diperlukan. File harus dalam format PDF (Max 5MB per file).
+              Upload semua dokumen yang diperlukan. File harus dalam format PDF
+              (Max 5MB per file).
             </p>
           </div>
         </div>
@@ -566,11 +570,14 @@ export default function EvaluatePage() {
               <div className="relative" data-dropdown>
                 <button
                   type="button"
-                  onClick={() => setOpenDropdown(
-                    openDropdown.index === index && openDropdown.field === 'unit'
-                      ? { index: null, field: null }
-                      : { index, field: 'unit' }
-                  )}
+                  onClick={() =>
+                    setOpenDropdown(
+                      openDropdown.index === index &&
+                        openDropdown.field === 'unit'
+                        ? { index: null, field: null }
+                        : { index, field: 'unit' }
+                    )
+                  }
                   className="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white cursor-pointer transition-all hover:border-gray-300 text-left text-gray-900"
                 >
                   {item.unit ? (
@@ -580,31 +587,40 @@ export default function EvaluatePage() {
                   )}
                   <svg
                     className={`absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 transition-transform ${
-                      openDropdown.index === index && openDropdown.field === 'unit' ? 'rotate-180' : ''
+                      openDropdown.index === index &&
+                      openDropdown.field === 'unit'
+                        ? 'rotate-180'
+                        : ''
                     }`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
-                {openDropdown.index === index && openDropdown.field === 'unit' && (
-                  <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl overflow-hidden">
-                    {['unit', 'set', 'pcs', 'buah', 'paket'].map((option) => (
-                      <div
-                        key={option}
-                        onClick={() => {
-                          handleItemChange(index, 'unit', option);
-                          setOpenDropdown({ index: null, field: null });
-                        }}
-                        className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors text-gray-900 border-b border-gray-100 last:border-b-0"
-                      >
-                        {option.charAt(0).toUpperCase() + option.slice(1)}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {openDropdown.index === index &&
+                  openDropdown.field === 'unit' && (
+                    <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl overflow-hidden">
+                      {['unit', 'set', 'pcs', 'buah', 'paket'].map((option) => (
+                        <div
+                          key={option}
+                          onClick={() => {
+                            handleItemChange(index, 'unit', option);
+                            setOpenDropdown({ index: null, field: null });
+                          }}
+                          className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors text-gray-900 border-b border-gray-100 last:border-b-0"
+                        >
+                          {option.charAt(0).toUpperCase() + option.slice(1)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
               </div>
             </div>
 
@@ -666,46 +682,65 @@ export default function EvaluatePage() {
               <div className="relative" data-dropdown>
                 <button
                   type="button"
-                  onClick={() => setOpenDropdown(
-                    openDropdown.index === index && openDropdown.field === 'category'
-                      ? { index: null, field: null }
-                      : { index, field: 'category' }
-                  )}
+                  onClick={() =>
+                    setOpenDropdown(
+                      openDropdown.index === index &&
+                        openDropdown.field === 'category'
+                        ? { index: null, field: null }
+                        : { index, field: 'category' }
+                    )
+                  }
                   className="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white cursor-pointer transition-all hover:border-gray-300 text-left text-gray-900"
                 >
                   {item.category ? (
-                    regulations[item.category].name + ' (Min TKDN ' + regulations[item.category].minTKDN + '%)'
+                    regulations[item.category].name +
+                    ' (Min TKDN ' +
+                    regulations[item.category].minTKDN +
+                    '%)'
                   ) : (
                     <span className="text-gray-400">Pilih Kategori</span>
                   )}
                   <svg
                     className={`absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 transition-transform ${
-                      openDropdown.index === index && openDropdown.field === 'category' ? 'rotate-180' : ''
+                      openDropdown.index === index &&
+                      openDropdown.field === 'category'
+                        ? 'rotate-180'
+                        : ''
                     }`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
-                {openDropdown.index === index && openDropdown.field === 'category' && (
-                  <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl overflow-hidden max-h-60 overflow-y-auto">
-                    {Object.entries(regulations).map(([key, val]) => (
-                      <div
-                        key={key}
-                        onClick={() => {
-                          handleItemChange(index, 'category', key);
-                          setOpenDropdown({ index: null, field: null });
-                        }}
-                        className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0"
-                      >
-                        <div className="font-medium text-gray-900">{val.name}</div>
-                        <div className="text-sm text-gray-500 mt-0.5">Min TKDN {val.minTKDN}%</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {openDropdown.index === index &&
+                  openDropdown.field === 'category' && (
+                    <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl overflow-hidden max-h-60 overflow-y-auto">
+                      {Object.entries(regulations).map(([key, val]) => (
+                        <div
+                          key={key}
+                          onClick={() => {
+                            handleItemChange(index, 'category', key);
+                            setOpenDropdown({ index: null, field: null });
+                          }}
+                          className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0"
+                        >
+                          <div className="font-medium text-gray-900">
+                            {val.name}
+                          </div>
+                          <div className="text-sm text-gray-500 mt-0.5">
+                            Min TKDN {val.minTKDN}%
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
               </div>
             </div>
 

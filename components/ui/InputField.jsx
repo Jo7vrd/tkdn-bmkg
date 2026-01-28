@@ -3,7 +3,17 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Calculator, Info, FileText, History, LayoutDashboard, LogOut, Menu, X } from 'lucide-react';
+import {
+  Home,
+  Calculator,
+  Info,
+  FileText,
+  History,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  X,
+} from 'lucide-react';
 import { useAuth } from '../../app/contexts/AuthContext';
 
 export default function Header() {
@@ -59,7 +69,7 @@ export default function Header() {
   }
 
   return (
-    <header 
+    <header
       className={`fixed top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-backdrop-filter:bg-white/60 transition-transform duration-300 ease-in-out ${
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
@@ -67,7 +77,10 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href={user?.role === 'admin' ? '/admin' : '/home'} className="flex items-center space-x-3 shrink-0">
+          <Link
+            href={user?.role === 'admin' ? '/admin' : '/home'}
+            className="flex items-center space-x-3 shrink-0"
+          >
             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 shadow-lg">
               <FileText className="w-6 h-6 text-white" />
             </div>
@@ -115,7 +128,7 @@ export default function Header() {
           </nav>
 
           {/* Mobile menu button */}
-          <button 
+          <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden p-2 rounded-lg hover:bg-gray-100"
           >
@@ -152,7 +165,7 @@ export default function Header() {
                 </Link>
               );
             })}
-            
+
             {/* Mobile Logout */}
             <button
               onClick={() => {
@@ -172,7 +185,9 @@ export default function Header() {
       {user && (
         <div className="hidden md:block fixed left-4 top-20 bg-white border rounded-lg shadow-lg px-4 py-2 z-40 pointer-events-none">
           <p className="text-xs text-gray-500">Logged in as</p>
-          <p className="font-semibold text-gray-900">{user.full_name || user.username}</p>
+          <p className="font-semibold text-gray-900">
+            {user.full_name || user.username}
+          </p>
           <p className="text-xs text-blue-600 capitalize">{user.role}</p>
         </div>
       )}

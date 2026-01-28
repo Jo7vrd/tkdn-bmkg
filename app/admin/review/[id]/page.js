@@ -2,9 +2,28 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, CheckCircle, XCircle, FileText, AlertCircle, Calendar, User, Mail, Phone, Building, Briefcase, Eye, Download, FileDown } from 'lucide-react';
+import {
+  ArrowLeft,
+  CheckCircle,
+  XCircle,
+  FileText,
+  AlertCircle,
+  Calendar,
+  User,
+  Mail,
+  Phone,
+  Building,
+  Briefcase,
+  Eye,
+  Download,
+  FileDown,
+} from 'lucide-react';
 import Link from 'next/link';
-import { getEvaluationById, updateEvaluationStatus, getEvaluations } from '../../../../lib/storage';
+import {
+  getEvaluationById,
+  updateEvaluationStatus,
+  getEvaluations,
+} from '../../../../lib/storage';
 import PDFModal from '../../../../components/PDFModal';
 
 export default function ReviewSubmission({ params }) {
@@ -13,14 +32,18 @@ export default function ReviewSubmission({ params }) {
   const [reviewData, setReviewData] = useState({
     status: '',
     notes: '',
-    presentationDate: ''
+    presentationDate: '',
   });
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [pdfPreview, setPdfPreview] = useState({ isOpen: false, url: '', title: '' });
+  const [pdfPreview, setPdfPreview] = useState({
+    isOpen: false,
+    url: '',
+    title: '',
+  });
   const [justificationReview, setJustificationReview] = useState({
     status: '',
-    reason: ''
+    reason: '',
   });
   const [showJustificationModal, setShowJustificationModal] = useState(false);
 
@@ -29,15 +52,15 @@ export default function ReviewSubmission({ params }) {
     const loadSubmission = async () => {
       const resolvedParams = await params;
       const data = getEvaluationById(resolvedParams.id);
-      
+
       if (data) {
         setSubmission(data);
-        
+
         if (data.status !== 'pending' && data.status !== 'under_review') {
           setReviewData({
             status: data.status,
             notes: data.reviewNotes || '',
-            presentationDate: data.presentationDate || ''
+            presentationDate: data.presentationDate || '',
           });
         }
       }
@@ -46,16 +69,18 @@ export default function ReviewSubmission({ params }) {
     loadSubmission();
   }, [params]);
 
-  const isReviewed = submission?.status === 'accepted' || submission?.status === 'rejected';
+  const isReviewed =
+    submission?.status === 'accepted' || submission?.status === 'rejected';
 
   // Document label mapping
   const documentLabels = {
     surat_permohonan: 'Surat Permohonan (TTD Eselon II)',
     daftar_barang: 'Daftar Barang yang Akan Dibeli',
     surat_kebutuhan: 'Surat Pernyataan Kebutuhan Operasional',
-    surat_tidak_terdaftar: 'Surat Pernyataan Barang Tidak Terdaftar di Kemenperin',
+    surat_tidak_terdaftar:
+      'Surat Pernyataan Barang Tidak Terdaftar di Kemenperin',
     lampiran_spesifikasi: 'Lampiran Spesifikasi dan Bukti',
-    dokumen_pendukung: 'Dokumen Pendukung Lainnya (Opsional)'
+    dokumen_pendukung: 'Dokumen Pendukung Lainnya (Opsional)',
   };
 
   const handleSubmitReview = async () => {
@@ -64,12 +89,13 @@ export default function ReviewSubmission({ params }) {
     try {
       const resolvedParams = await params;
       const updated = updateEvaluationStatus(
-        resolvedParams.id, 
-        reviewData.status, 
+        resolvedParams.id,
+        reviewData.status,
         {
           reviewNotes: reviewData.notes,
           presentationDate: reviewData.presentationDate,
-          rejectionReason: reviewData.status === 'rejected' ? reviewData.notes : null
+          rejectionReason:
+            reviewData.status === 'rejected' ? reviewData.notes : null,
         }
       );
 
@@ -118,24 +144,29 @@ export default function ReviewSubmission({ params }) {
       const resolvedParams = await params;
       const evaluations = getEvaluations();
       const index = evaluations.findIndex((e) => e.id === resolvedParams.id);
-      
+
       if (index !== -1 && evaluations[index].justificationDocument) {
-        evaluations[index].justificationDocument.status = action === 'approve' ? 'approved' : 'rejected';
-        evaluations[index].justificationDocument.reviewedAt = new Date().toISOString();
+        evaluations[index].justificationDocument.status =
+          action === 'approve' ? 'approved' : 'rejected';
+        evaluations[index].justificationDocument.reviewedAt =
+          new Date().toISOString();
         evaluations[index].justificationDocument.reviewedBy = 'Admin';
-        
+
         if (action === 'reject') {
-          evaluations[index].justificationDocument.rejectionReason = justificationReview.reason;
+          evaluations[index].justificationDocument.rejectionReason =
+            justificationReview.reason;
         }
-        
+
         localStorage.setItem('tkdn_evaluations', JSON.stringify(evaluations));
-        
+
         // Update local state immediately
         setSubmission(evaluations[index]);
         setShowJustificationModal(false);
         setJustificationReview({ status: '', reason: '' });
-        
-        alert(`Dokumen justifikasi ${action === 'approve' ? 'disetujui' : 'ditolak'}!`);
+
+        alert(
+          `Dokumen justifikasi ${action === 'approve' ? 'disetujui' : 'ditolak'}!`
+        );
       }
     } catch (error) {
       alert('Gagal menyimpan review: ' + error.message);
@@ -149,7 +180,7 @@ export default function ReviewSubmission({ params }) {
         isOpen: true,
         url: doc.data,
         title: doc.name || 'Dokumen Justifikasi',
-        fileType: doc.type || 'application/pdf'
+        fileType: doc.type || 'application/pdf',
       });
     } else {
       alert('Data dokumen tidak tersedia untuk preview');
@@ -162,8 +193,9 @@ export default function ReviewSubmission({ params }) {
       setPdfPreview({
         isOpen: true,
         url: docData,
-        title: documentLabels[doc.type] || doc.type.replace(/_/g, ' ').toUpperCase(),
-        fileType: doc.type
+        title:
+          documentLabels[doc.type] || doc.type.replace(/_/g, ' ').toUpperCase(),
+        fileType: doc.type,
       });
     } else {
       alert('Data dokumen tidak tersedia untuk preview');
@@ -206,27 +238,39 @@ export default function ReviewSubmission({ params }) {
                 <AlertCircle className="w-6 h-6 text-yellow-600" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Konfirmasi Review</h3>
-                <p className="text-sm text-gray-500">Pastikan data sudah benar</p>
+                <h3 className="text-lg font-bold text-gray-900">
+                  Konfirmasi Review
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Pastikan data sudah benar
+                </p>
               </div>
             </div>
 
             <div className="bg-gray-50 rounded-lg p-4 mb-6 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Status:</span>
-                <span className={`font-semibold ${
-                  reviewData.status === 'accepted' ? 'text-green-600' : 'text-red-600'
-                }`}>
+                <span
+                  className={`font-semibold ${
+                    reviewData.status === 'accepted'
+                      ? 'text-green-600'
+                      : 'text-red-600'
+                  }`}
+                >
                   {reviewData.status === 'accepted' ? 'Disetujui' : 'Ditolak'}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">PPK:</span>
-                <span className="font-semibold text-gray-900">{submission.ppkData?.nama_ppk || 'N/A'}</span>
+                <span className="font-semibold text-gray-900">
+                  {submission.ppkData?.nama_ppk || 'N/A'}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Items:</span>
-                <span className="font-semibold text-blue-600">{submission.items?.length || 0} items</span>
+                <span className="font-semibold text-blue-600">
+                  {submission.items?.length || 0} items
+                </span>
               </div>
             </div>
 
@@ -274,16 +318,21 @@ export default function ReviewSubmission({ params }) {
 
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Review Pengajuan</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Review Pengajuan
+              </h1>
               <p className="text-sm text-gray-500 mt-1">
-                ID: {submission.id} • Diajukan {formatDate(submission.submittedAt)}
+                ID: {submission.id} • Diajukan{' '}
+                {formatDate(submission.submittedAt)}
               </p>
             </div>
 
             {isReviewed && (
               <div className="flex items-center space-x-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
                 <CheckCircle className="w-5 h-5 text-blue-600" />
-                <span className="text-sm font-semibold text-blue-900">Sudah Direview</span>
+                <span className="text-sm font-semibold text-blue-900">
+                  Sudah Direview
+                </span>
               </div>
             )}
           </div>
@@ -301,48 +350,60 @@ export default function ReviewSubmission({ params }) {
                 <User className="w-5 h-5 mr-2 text-blue-600" />
                 Data PPK
               </h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-start space-x-3">
                   <User className="w-5 h-5 text-gray-400 mt-0.5" />
                   <div>
                     <p className="text-xs text-gray-500">Nama PPK</p>
-                    <p className="font-semibold text-gray-900">{submission.ppkData?.nama_ppk || 'N/A'}</p>
+                    <p className="font-semibold text-gray-900">
+                      {submission.ppkData?.nama_ppk || 'N/A'}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <FileText className="w-5 h-5 text-gray-400 mt-0.5" />
                   <div>
                     <p className="text-xs text-gray-500">NIP</p>
-                    <p className="font-semibold text-gray-900">{submission.ppkData?.nip || 'N/A'}</p>
+                    <p className="font-semibold text-gray-900">
+                      {submission.ppkData?.nip || 'N/A'}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Mail className="w-5 h-5 text-gray-400 mt-0.5" />
                   <div>
                     <p className="text-xs text-gray-500">Email</p>
-                    <p className="font-semibold text-gray-900">{submission.ppkData?.email || 'N/A'}</p>
+                    <p className="font-semibold text-gray-900">
+                      {submission.ppkData?.email || 'N/A'}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Phone className="w-5 h-5 text-gray-400 mt-0.5" />
                   <div>
                     <p className="text-xs text-gray-500">No. HP</p>
-                    <p className="font-semibold text-gray-900">{submission.ppkData?.no_hp || 'N/A'}</p>
+                    <p className="font-semibold text-gray-900">
+                      {submission.ppkData?.no_hp || 'N/A'}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Building className="w-5 h-5 text-gray-400 mt-0.5" />
                   <div>
                     <p className="text-xs text-gray-500">Unit Kerja</p>
-                    <p className="font-semibold text-gray-900">{submission.ppkData?.unit_kerja || 'N/A'}</p>
+                    <p className="font-semibold text-gray-900">
+                      {submission.ppkData?.unit_kerja || 'N/A'}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Briefcase className="w-5 h-5 text-gray-400 mt-0.5" />
                   <div>
                     <p className="text-xs text-gray-500">Jabatan</p>
-                    <p className="font-semibold text-gray-900">{submission.ppkData?.jabatan || 'N/A'}</p>
+                    <p className="font-semibold text-gray-900">
+                      {submission.ppkData?.jabatan || 'N/A'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -354,18 +415,22 @@ export default function ReviewSubmission({ params }) {
                 <FileText className="w-5 h-5 mr-2 text-blue-600" />
                 Dokumen yang Diupload
               </h2>
-              
+
               <div className="space-y-3">
                 {submission.documents && submission.documents.length > 0 ? (
                   submission.documents.map((doc, idx) => (
-                    <div key={idx} className="flex items-center justify-between py-3 px-4 bg-linear-to-r from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200 hover:border-blue-400 transition-all group">
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between py-3 px-4 bg-linear-to-r from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200 hover:border-blue-400 transition-all group"
+                    >
                       <div className="flex items-center space-x-3 flex-1">
                         <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
                           <FileText className="w-5 h-5 text-white" />
                         </div>
                         <div className="flex-1">
                           <p className="text-sm font-semibold text-gray-900">
-                            {documentLabels[doc.type] || doc.type.replace(/_/g, ' ')}
+                            {documentLabels[doc.type] ||
+                              doc.type.replace(/_/g, ' ')}
                           </p>
                           <p className="text-xs text-gray-600">{doc.name}</p>
                         </div>
@@ -399,136 +464,166 @@ export default function ReviewSubmission({ params }) {
             </div>
 
             {/* Justification Document Section */}
-            {submission.status === 'accepted' && submission.presentationDate && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                  <FileDown className="w-5 h-5 mr-2 text-yellow-600" />
-                  Dokumen Justifikasi Barang Import
-                </h2>
-                
-                {submission.justificationDocument ? (
-                  <div className="space-y-3">
-                    <div className="bg-linear-to-r from-yellow-50 to-amber-50 border-2 border-yellow-200 rounded-xl p-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center space-x-3 flex-1">
-                          <div className="w-10 h-10 bg-yellow-600 rounded-lg flex items-center justify-center">
-                            <FileText className="w-5 h-5 text-white" />
+            {submission.status === 'accepted' &&
+              submission.presentationDate && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <FileDown className="w-5 h-5 mr-2 text-yellow-600" />
+                    Dokumen Justifikasi Barang Import
+                  </h2>
+
+                  {submission.justificationDocument ? (
+                    <div className="space-y-3">
+                      <div className="bg-linear-to-r from-yellow-50 to-amber-50 border-2 border-yellow-200 rounded-xl p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center space-x-3 flex-1">
+                            <div className="w-10 h-10 bg-yellow-600 rounded-lg flex items-center justify-center">
+                              <FileText className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-900">
+                                {submission.justificationDocument.name}
+                              </p>
+                              <p className="text-xs text-gray-600">
+                                Diupload:{' '}
+                                {formatDate(
+                                  submission.justificationDocument.uploadedAt
+                                )}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-semibold text-gray-900">
-                              {submission.justificationDocument.name}
+
+                          <div className="flex items-center space-x-2">
+                            {submission.justificationDocument.status ===
+                              'pending_review' && (
+                              <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-semibold">
+                                Menunggu Review
+                              </span>
+                            )}
+                            {submission.justificationDocument.status ===
+                              'approved' && (
+                              <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold flex items-center">
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                Disetujui
+                              </span>
+                            )}
+                            {submission.justificationDocument.status ===
+                              'rejected' && (
+                              <span className="text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full font-semibold flex items-center">
+                                <XCircle className="w-3 h-3 mr-1" />
+                                Ditolak
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Preview Button */}
+                        <div className="mt-3 pt-3 border-t border-yellow-200">
+                          <button
+                            onClick={handlePreviewJustification}
+                            className="w-full flex items-center justify-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all"
+                          >
+                            <Eye className="w-4 h-4" />
+                            <span>Preview Dokumen</span>
+                          </button>
+                        </div>
+
+                        {submission.justificationDocument.status ===
+                          'pending_review' && (
+                          <div className="mt-4 pt-4 border-t border-yellow-200">
+                            <p className="text-sm font-semibold text-gray-900 mb-3">
+                              Review Dokumen Justifikasi:
                             </p>
-                            <p className="text-xs text-gray-600">
-                              Diupload: {formatDate(submission.justificationDocument.uploadedAt)}
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => {
+                                  setJustificationReview({
+                                    status: 'approve',
+                                    reason: '',
+                                  });
+                                  setShowJustificationModal(true);
+                                }}
+                                className="flex-1 flex items-center justify-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                                <span>Setujui</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setJustificationReview({
+                                    status: 'reject',
+                                    reason: '',
+                                  });
+                                  setShowJustificationModal(true);
+                                }}
+                                className="flex-1 flex items-center justify-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-all"
+                              >
+                                <XCircle className="w-4 h-4" />
+                                <span>Tolak</span>
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {submission.justificationDocument.status ===
+                          'rejected' && (
+                          <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3">
+                            <p className="text-xs font-semibold text-red-900 mb-1">
+                              Alasan Penolakan:
+                            </p>
+                            <p className="text-xs text-red-800">
+                              {submission.justificationDocument
+                                .rejectionReason || 'Tidak ada keterangan'}
                             </p>
                           </div>
-                        </div>
-                        
-                        <div className="flex items-center space-x-2">
-                          {submission.justificationDocument.status === 'pending_review' && (
-                            <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-semibold">
-                              Menunggu Review
-                            </span>
-                          )}
-                          {submission.justificationDocument.status === 'approved' && (
-                            <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold flex items-center">
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              Disetujui
-                            </span>
-                          )}
-                          {submission.justificationDocument.status === 'rejected' && (
-                            <span className="text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full font-semibold flex items-center">
-                              <XCircle className="w-3 h-3 mr-1" />
-                              Ditolak
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* Preview Button */}
-                      <div className="mt-3 pt-3 border-t border-yellow-200">
-                        <button
-                          onClick={handlePreviewJustification}
-                          className="w-full flex items-center justify-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all"
-                        >
-                          <Eye className="w-4 h-4" />
-                          <span>Preview Dokumen</span>
-                        </button>
-                      </div>
-                      
-                      {submission.justificationDocument.status === 'pending_review' && (
-                        <div className="mt-4 pt-4 border-t border-yellow-200">
-                          <p className="text-sm font-semibold text-gray-900 mb-3">
-                            Review Dokumen Justifikasi:
-                          </p>
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => {
-                                setJustificationReview({ status: 'approve', reason: '' });
-                                setShowJustificationModal(true);
-                              }}
-                              className="flex-1 flex items-center justify-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all"
-                            >
-                              <CheckCircle className="w-4 h-4" />
-                              <span>Setujui</span>
-                            </button>
-                            <button
-                              onClick={() => {
-                                setJustificationReview({ status: 'reject', reason: '' });
-                                setShowJustificationModal(true);
-                              }}
-                              className="flex-1 flex items-center justify-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-all"
-                            >
-                              <XCircle className="w-4 h-4" />
-                              <span>Tolak</span>
-                            </button>
+                        )}
+
+                        {submission.justificationDocument.status ===
+                          'approved' && (
+                          <div className="mt-3 bg-green-50 border border-green-200 rounded-lg p-3">
+                            <p className="text-xs text-green-800">
+                              <CheckCircle className="w-3 h-3 inline mr-1" />
+                              Dokumen telah disetujui pada{' '}
+                              {formatDate(
+                                submission.justificationDocument.reviewedAt
+                              )}
+                            </p>
                           </div>
-                        </div>
-                      )}
-                      
-                      {submission.justificationDocument.status === 'rejected' && (
-                        <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3">
-                          <p className="text-xs font-semibold text-red-900 mb-1">
-                            Alasan Penolakan:
-                          </p>
-                          <p className="text-xs text-red-800">
-                            {submission.justificationDocument.rejectionReason || 'Tidak ada keterangan'}
-                          </p>
-                        </div>
-                      )}
-                      
-                      {submission.justificationDocument.status === 'approved' && (
-                        <div className="mt-3 bg-green-50 border border-green-200 rounded-lg p-3">
-                          <p className="text-xs text-green-800">
-                            <CheckCircle className="w-3 h-3 inline mr-1" />
-                            Dokumen telah disetujui pada {formatDate(submission.justificationDocument.reviewedAt)}
-                          </p>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                    <FileDown className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                    <p className="text-gray-500 text-sm">Belum ada dokumen justifikasi yang diupload</p>
-                  </div>
-                )}
-              </div>
-            )}
+                  ) : (
+                    <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                      <FileDown className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                      <p className="text-gray-500 text-sm">
+                        Belum ada dokumen justifikasi yang diupload
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
             {/* Items List */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Daftar Items Pengajuan</h2>
-              
+              <h2 className="text-lg font-bold text-gray-900 mb-4">
+                Daftar Items Pengajuan
+              </h2>
+
               <div className="space-y-4">
                 {submission.items && submission.items.length > 0 ? (
                   submission.items.map((item, index) => (
-                    <div key={index} className="border-2 border-gray-200 rounded-xl p-4">
+                    <div
+                      key={index}
+                      className="border-2 border-gray-200 rounded-xl p-4"
+                    >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
-                          <h3 className="font-bold text-gray-900 text-lg">{item.item_name}</h3>
+                          <h3 className="font-bold text-gray-900 text-lg">
+                            {item.item_name}
+                          </h3>
                           <p className="text-sm text-gray-600 mt-1">
-                            {item.quantity} {item.unit} • {item.brand} {item.model}
+                            {item.quantity} {item.unit} • {item.brand}{' '}
+                            {item.model}
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
                             Kategori: {item.category}
@@ -552,43 +647,71 @@ export default function ReviewSubmission({ params }) {
                       <div className="grid grid-cols-3 gap-3 mb-3">
                         <div className="bg-blue-50 p-3 rounded-lg">
                           <div className="text-xs text-blue-700 mb-1">TKDN</div>
-                          <div className="text-xl font-bold text-blue-600">{item.tkdnValue}%</div>
+                          <div className="text-xl font-bold text-blue-600">
+                            {item.tkdnValue}%
+                          </div>
                         </div>
                         <div className="bg-purple-50 p-3 rounded-lg">
-                          <div className="text-xs text-purple-700 mb-1">BMP</div>
-                          <div className="text-xl font-bold text-purple-600">{item.bmpValue}%</div>
+                          <div className="text-xs text-purple-700 mb-1">
+                            BMP
+                          </div>
+                          <div className="text-xl font-bold text-purple-600">
+                            {item.bmpValue}%
+                          </div>
                         </div>
                         <div className="bg-indigo-50 p-3 rounded-lg">
-                          <div className="text-xs text-indigo-700 mb-1">Total</div>
-                          <div className="text-xl font-bold text-indigo-600">{item.totalValue}%</div>
+                          <div className="text-xs text-indigo-700 mb-1">
+                            Total
+                          </div>
+                          <div className="text-xl font-bold text-indigo-600">
+                            {item.totalValue}%
+                          </div>
                         </div>
                       </div>
 
                       <div className="text-xs text-gray-600 space-y-1">
                         <div className="flex justify-between py-1 border-t">
                           <span>Harga Barang Jadi:</span>
-                          <span className="font-semibold">Rp {parseFloat(item.final_price).toLocaleString('id-ID')}</span>
+                          <span className="font-semibold">
+                            Rp{' '}
+                            {parseFloat(item.final_price).toLocaleString(
+                              'id-ID'
+                            )}
+                          </span>
                         </div>
                         <div className="flex justify-between py-1">
                           <span>Komponen Luar Negeri:</span>
-                          <span className="font-semibold text-red-600">Rp {parseFloat(item.foreign_price).toLocaleString('id-ID')}</span>
+                          <span className="font-semibold text-red-600">
+                            Rp{' '}
+                            {parseFloat(item.foreign_price).toLocaleString(
+                              'id-ID'
+                            )}
+                          </span>
                         </div>
                         <div className="flex justify-between py-1">
                           <span>Komponen Dalam Negeri:</span>
-                          <span className="font-semibold text-green-600">Rp {item.localPrice.toLocaleString('id-ID')}</span>
+                          <span className="font-semibold text-green-600">
+                            Rp {item.localPrice.toLocaleString('id-ID')}
+                          </span>
                         </div>
                       </div>
 
                       {item.specifications && (
                         <div className="mt-3 pt-3 border-t">
-                          <p className="text-xs text-gray-500 mb-1">Spesifikasi:</p>
-                          <p className="text-sm text-gray-700">{item.specifications}</p>
+                          <p className="text-xs text-gray-500 mb-1">
+                            Spesifikasi:
+                          </p>
+                          <p className="text-sm text-gray-700">
+                            {item.specifications}
+                          </p>
                         </div>
                       )}
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-500 text-center py-8">Tidak ada items</p>
+                  <p className="text-gray-500 text-center py-8">
+                    Tidak ada items
+                  </p>
                 )}
               </div>
             </div>
@@ -605,10 +728,13 @@ export default function ReviewSubmission({ params }) {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                   <div className="flex items-center space-x-2 mb-2">
                     <CheckCircle className="w-5 h-5 text-blue-600" />
-                    <p className="text-sm font-semibold text-blue-900">Sudah Direview</p>
+                    <p className="text-sm font-semibold text-blue-900">
+                      Sudah Direview
+                    </p>
                   </div>
                   <p className="text-xs text-blue-800">
-                    Pengajuan ini telah direview pada {formatDate(submission.reviewedAt || submission.timestamp)}
+                    Pengajuan ini telah direview pada{' '}
+                    {formatDate(submission.reviewedAt || submission.timestamp)}
                   </p>
                 </div>
               )}
@@ -621,7 +747,10 @@ export default function ReviewSubmission({ params }) {
                   </label>
                   <div className="flex space-x-3">
                     <button
-                      onClick={() => !isReviewed && setReviewData({...reviewData, status: 'accepted'})}
+                      onClick={() =>
+                        !isReviewed &&
+                        setReviewData({ ...reviewData, status: 'accepted' })
+                      }
                       disabled={isReviewed}
                       className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg border-2 transition-all ${
                         reviewData.status === 'accepted'
@@ -633,7 +762,10 @@ export default function ReviewSubmission({ params }) {
                       <span className="font-semibold">Accept</span>
                     </button>
                     <button
-                      onClick={() => !isReviewed && setReviewData({...reviewData, status: 'rejected'})}
+                      onClick={() =>
+                        !isReviewed &&
+                        setReviewData({ ...reviewData, status: 'rejected' })
+                      }
                       disabled={isReviewed}
                       className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg border-2 transition-all ${
                         reviewData.status === 'rejected'
@@ -654,7 +786,10 @@ export default function ReviewSubmission({ params }) {
                   </label>
                   <textarea
                     value={reviewData.notes}
-                    onChange={(e) => !isReviewed && setReviewData({...reviewData, notes: e.target.value})}
+                    onChange={(e) =>
+                      !isReviewed &&
+                      setReviewData({ ...reviewData, notes: e.target.value })
+                    }
                     disabled={isReviewed}
                     rows="4"
                     className={`w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none ${
@@ -674,7 +809,13 @@ export default function ReviewSubmission({ params }) {
                     <input
                       type="datetime-local"
                       value={reviewData.presentationDate}
-                      onChange={(e) => !isReviewed && setReviewData({...reviewData, presentationDate: e.target.value})}
+                      onChange={(e) =>
+                        !isReviewed &&
+                        setReviewData({
+                          ...reviewData,
+                          presentationDate: e.target.value,
+                        })
+                      }
                       disabled={isReviewed}
                       className={`w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                         isReviewed ? 'bg-gray-50 cursor-not-allowed' : ''
@@ -708,7 +849,9 @@ export default function ReviewSubmission({ params }) {
       {/* PDF Preview Modal */}
       <PDFModal
         isOpen={pdfPreview.isOpen}
-        onClose={() => setPdfPreview({ isOpen: false, url: '', title: '', fileType: '' })}
+        onClose={() =>
+          setPdfPreview({ isOpen: false, url: '', title: '', fileType: '' })
+        }
         pdfUrl={pdfPreview.url}
         title={pdfPreview.title}
         fileType={pdfPreview.fileType}
@@ -724,11 +867,13 @@ export default function ReviewSubmission({ params }) {
             className="bg-white rounded-2xl shadow-2xl max-w-md w-full"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className={`px-6 py-4 rounded-t-2xl ${
-              justificationReview.status === 'approve' 
-                ? 'bg-linear-to-r from-green-500 to-emerald-600' 
-                : 'bg-linear-to-r from-red-500 to-rose-600'
-            }`}>
+            <div
+              className={`px-6 py-4 rounded-t-2xl ${
+                justificationReview.status === 'approve'
+                  ? 'bg-linear-to-r from-green-500 to-emerald-600'
+                  : 'bg-linear-to-r from-red-500 to-rose-600'
+              }`}
+            >
               <h2 className="text-xl font-bold text-white flex items-center">
                 {justificationReview.status === 'approve' ? (
                   <>
@@ -746,15 +891,20 @@ export default function ReviewSubmission({ params }) {
 
             <div className="p-6 space-y-4">
               <p className="text-gray-700">
-                {justificationReview.status === 'approve' 
-                  ? 'Apakah Anda yakin ingin menyetujui dokumen justifikasi ini?' 
+                {justificationReview.status === 'approve'
+                  ? 'Apakah Anda yakin ingin menyetujui dokumen justifikasi ini?'
                   : 'Silakan berikan alasan penolakan dokumen justifikasi:'}
               </p>
 
               {justificationReview.status === 'reject' && (
                 <textarea
                   value={justificationReview.reason}
-                  onChange={(e) => setJustificationReview({...justificationReview, reason: e.target.value})}
+                  onChange={(e) =>
+                    setJustificationReview({
+                      ...justificationReview,
+                      reason: e.target.value,
+                    })
+                  }
                   rows="4"
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none"
                   placeholder="Jelaskan alasan penolakan dokumen..."
@@ -769,14 +919,18 @@ export default function ReviewSubmission({ params }) {
                   Batal
                 </button>
                 <button
-                  onClick={() => handleJustificationReview(justificationReview.status)}
+                  onClick={() =>
+                    handleJustificationReview(justificationReview.status)
+                  }
                   className={`flex-1 py-3 rounded-xl font-semibold text-white transition-all ${
                     justificationReview.status === 'approve'
                       ? 'bg-linear-to-r from-green-600 to-emerald-700 hover:shadow-lg'
                       : 'bg-linear-to-r from-red-600 to-rose-700 hover:shadow-lg'
                   }`}
                 >
-                  {justificationReview.status === 'approve' ? 'Setujui' : 'Tolak'}
+                  {justificationReview.status === 'approve'
+                    ? 'Setujui'
+                    : 'Tolak'}
                 </button>
               </div>
             </div>

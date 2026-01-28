@@ -25,7 +25,11 @@ export default function DashboardPage() {
   const [uploadingSubmissionId, setUploadingSubmissionId] = useState(null);
   const [justificationFile, setJustificationFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [pdfPreview, setPdfPreview] = useState({ isOpen: false, url: '', title: '' });
+  const [pdfPreview, setPdfPreview] = useState({
+    isOpen: false,
+    url: '',
+    title: '',
+  });
 
   // Handle hydration - load data after component mounts
   useEffect(() => {
@@ -68,18 +72,24 @@ export default function DashboardPage() {
       // For PDF files, use direct base64
       // For Word files, use Google Docs Viewer
       let previewUrl = doc.data;
-      
-      if (doc.type && (doc.type.includes('word') || doc.type.includes('msword') || doc.name?.endsWith('.doc') || doc.name?.endsWith('.docx'))) {
+
+      if (
+        doc.type &&
+        (doc.type.includes('word') ||
+          doc.type.includes('msword') ||
+          doc.name?.endsWith('.doc') ||
+          doc.name?.endsWith('.docx'))
+      ) {
         // For Word files, we need to use Google Docs Viewer
         // Since we have base64, we'll use it directly but notify user it's better to download
         previewUrl = doc.data;
       }
-      
+
       setPdfPreview({
         isOpen: true,
         url: previewUrl,
         title: doc.name || 'Dokumen Justifikasi',
-        fileType: doc.type || 'application/pdf'
+        fileType: doc.type || 'application/pdf',
       });
     }
   };
@@ -119,10 +129,12 @@ export default function DashboardPage() {
     const reader = new FileReader();
     reader.onload = (e) => {
       const base64Data = e.target.result;
-      
+
       const evaluations = getEvaluations();
-      const index = evaluations.findIndex((ev) => ev.id === uploadingSubmissionId);
-      
+      const index = evaluations.findIndex(
+        (ev) => ev.id === uploadingSubmissionId
+      );
+
       if (index !== -1) {
         evaluations[index].justificationDocument = {
           name: justificationFile.name,
@@ -132,9 +144,9 @@ export default function DashboardPage() {
           status: 'pending_review', // pending_review, approved, rejected
           data: base64Data, // Store base64 for preview
         };
-        
+
         localStorage.setItem('tkdn_evaluations', JSON.stringify(evaluations));
-        
+
         alert('Dokumen justifikasi berhasil diupload!');
         setIsUploading(false);
         closeUploadModal();
@@ -142,12 +154,12 @@ export default function DashboardPage() {
         setSubmissions(getEvaluations());
       }
     };
-    
+
     reader.onerror = () => {
       alert('Gagal membaca file');
       setIsUploading(false);
     };
-    
+
     reader.readAsDataURL(justificationFile);
   };
 
@@ -294,13 +306,13 @@ export default function DashboardPage() {
                             </p>
                           </div>
                         </div>
-                        
+
                         {/* Justification Document Section */}
                         <div className="mt-4 pt-4 border-t border-green-200">
                           <p className="font-semibold text-green-900 text-sm mb-3">
                             Dokumen Justifikasi Barang Import:
                           </p>
-                          
+
                           {!submission.justificationDocument ? (
                             <div className="space-y-2">
                               <button
@@ -328,30 +340,41 @@ export default function DashboardPage() {
                                       {submission.justificationDocument.name}
                                     </p>
                                     <p className="text-xs text-gray-600">
-                                      Upload: {formatDate(submission.justificationDocument.uploadedAt)}
+                                      Upload:{' '}
+                                      {formatDate(
+                                        submission.justificationDocument
+                                          .uploadedAt
+                                      )}
                                     </p>
                                   </div>
                                 </div>
                                 <div className="flex items-center space-x-2">
                                   <button
-                                    onClick={() => handlePreviewDocument(submission.justificationDocument)}
+                                    onClick={() =>
+                                      handlePreviewDocument(
+                                        submission.justificationDocument
+                                      )
+                                    }
                                     className="px-3 py-1 bg-blue-500 text-white rounded-lg text-xs font-semibold hover:bg-blue-600 transition-all flex items-center space-x-1"
                                   >
                                     <Eye className="w-3 h-3" />
                                     <span>Preview</span>
                                   </button>
-                                  {submission.justificationDocument.status === 'pending_review' && (
+                                  {submission.justificationDocument.status ===
+                                    'pending_review' && (
                                     <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-semibold">
                                       Menunggu Review
                                     </span>
                                   )}
-                                  {submission.justificationDocument.status === 'approved' && (
+                                  {submission.justificationDocument.status ===
+                                    'approved' && (
                                     <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold flex items-center">
                                       <CheckCircle className="w-3 h-3 mr-1" />
                                       Disetujui
                                     </span>
                                   )}
-                                  {submission.justificationDocument.status === 'rejected' && (
+                                  {submission.justificationDocument.status ===
+                                    'rejected' && (
                                     <span className="text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full font-semibold flex items-center">
                                       <XCircle className="w-3 h-3 mr-1" />
                                       Ditolak
@@ -359,17 +382,22 @@ export default function DashboardPage() {
                                   )}
                                 </div>
                               </div>
-                              
-                              {submission.justificationDocument.status === 'rejected' && (
+
+                              {submission.justificationDocument.status ===
+                                'rejected' && (
                                 <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                                   <p className="text-xs font-semibold text-red-900 mb-1">
                                     Alasan Penolakan:
                                   </p>
                                   <p className="text-xs text-red-800">
-                                    {submission.justificationDocument.rejectionReason || 'Tidak ada keterangan'}
+                                    {submission.justificationDocument
+                                      .rejectionReason ||
+                                      'Tidak ada keterangan'}
                                   </p>
                                   <button
-                                    onClick={() => openUploadModal(submission.id)}
+                                    onClick={() =>
+                                      openUploadModal(submission.id)
+                                    }
                                     className="mt-2 w-full flex items-center justify-center space-x-2 bg-blue-500 text-white px-3 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-all text-xs"
                                   >
                                     <Upload className="w-3 h-3" />
@@ -702,9 +730,10 @@ export default function DashboardPage() {
               <div className="p-6 space-y-4">
                 <div>
                   <p className="text-sm text-gray-700 mb-4">
-                    Silakan upload dokumen surat permohonan justifikasi barang import yang sudah diisi.
+                    Silakan upload dokumen surat permohonan justifikasi barang
+                    import yang sudah diisi.
                   </p>
-                  
+
                   <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-500 transition-colors">
                     <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                     <label className="cursor-pointer">
@@ -764,7 +793,9 @@ export default function DashboardPage() {
       {/* PDF Preview Modal */}
       <PDFModal
         isOpen={pdfPreview.isOpen}
-        onClose={() => setPdfPreview({ isOpen: false, url: '', title: '', fileType: '' })}
+        onClose={() =>
+          setPdfPreview({ isOpen: false, url: '', title: '', fileType: '' })
+        }
         pdfUrl={pdfPreview.url}
         title={pdfPreview.title}
         fileType={pdfPreview.fileType}

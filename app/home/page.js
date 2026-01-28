@@ -21,14 +21,17 @@ function useInView(options = {}) {
 
   useEffect(() => {
     const currentRef = ref.current;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setIsInView(true);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+        }
+      },
+      {
+        threshold: 0.1,
+        ...options,
       }
-    }, {
-      threshold: 0.1,
-      ...options,
-    });
+    );
 
     if (currentRef) {
       observer.observe(currentRef);
@@ -98,27 +101,41 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative text-white overflow-hidden animate-gradient-wave flowing-gradient-bg" style={{background: 'linear-gradient(to bottom right, rgb(0, 0, 205), rgb(34, 139, 34))'}}>
+      <section
+        className="relative text-white overflow-hidden animate-gradient-wave flowing-gradient-bg"
+        style={{
+          background:
+            'linear-gradient(to bottom right, rgb(0, 0, 205), rgb(34, 139, 34))',
+        }}
+      >
         <div className="gradient-layer-3" />
         <div className="absolute inset-0 bg-grid-white/[0.05] bg-size-[20px_20px] z-10" />
         <div className="container mx-auto px-4 py-20 md:py-32 relative z-20">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
-            <div 
+            <div
               className="inline-block mb-6 group cursor-pointer"
               onMouseEnter={() => setIsRegulationExpanded(true)}
               onMouseLeave={() => setIsRegulationExpanded(false)}
             >
-              <div className={`inline-flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 transition-all duration-300 ${
-                isRegulationExpanded ? 'bg-white/20 shadow-lg' : 'hover:bg-white/15'
-              }`}>
+              <div
+                className={`inline-flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 transition-all duration-300 ${
+                  isRegulationExpanded
+                    ? 'bg-white/20 shadow-lg'
+                    : 'hover:bg-white/15'
+                }`}
+              >
                 <CheckCircle className="w-4 h-4" />
                 <span className="text-sm font-medium">
                   Sesuai PP No. 29 Tahun 2018
                 </span>
               </div>
-              <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                isRegulationExpanded ? 'max-h-10 opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'
-              }`}>
+              <div
+                className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                  isRegulationExpanded
+                    ? 'max-h-10 opacity-100 mt-2'
+                    : 'max-h-0 opacity-0 mt-0'
+                }`}
+              >
                 <div className="text-xs text-blue-100 opacity-90">
                   Peraturan Pemerintah tentang Kebijakan Industri Nasional
                 </div>
@@ -127,7 +144,14 @@ export default function Home() {
 
             <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight transition-all duration-500 ease-in-out">
               Evaluasi TKDN Produk Anda
-              <span className="block text-transparent bg-clip-text" style={{backgroundImage: 'linear-gradient(to right, rgb(173, 216, 230), rgb(144, 238, 144))', WebkitBackgroundClip: 'text'}}>
+              <span
+                className="block text-transparent bg-clip-text"
+                style={{
+                  backgroundImage:
+                    'linear-gradient(to right, rgb(173, 216, 230), rgb(144, 238, 144))',
+                  WebkitBackgroundClip: 'text',
+                }}
+              >
                 Dengan Mudah & Akurat
               </span>
             </h1>
@@ -159,27 +183,44 @@ export default function Home() {
         </div>
 
         {/* Decorative elements */}
-        <div className="absolute top-20 left-10 w-125 h-125 rounded-full blur-[120px] animate-pulse-slow" style={{backgroundColor: 'rgba(0, 0, 205, 0.3)'}} />
-        <div className="absolute bottom-20 right-10 w-150 h-150 rounded-full blur-[120px] animate-pulse-slower" style={{backgroundColor: 'rgba(34, 139, 34, 0.3)'}} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-112.5 h-112.5 rounded-full blur-[100px] animate-float-blob" style={{backgroundColor: 'rgba(0, 100, 180, 0.25)'}} />
+        <div
+          className="absolute top-20 left-10 w-125 h-125 rounded-full blur-[120px] animate-pulse-slow"
+          style={{ backgroundColor: 'rgba(0, 0, 205, 0.3)' }}
+        />
+        <div
+          className="absolute bottom-20 right-10 w-150 h-150 rounded-full blur-[120px] animate-pulse-slower"
+          style={{ backgroundColor: 'rgba(34, 139, 34, 0.3)' }}
+        />
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-112.5 h-112.5 rounded-full blur-[100px] animate-float-blob"
+          style={{ backgroundColor: 'rgba(0, 100, 180, 0.25)' }}
+        />
         <div
           className="absolute top-10 right-20 w-100 h-100 rounded-full blur-[110px] animate-pulse-slow"
-          style={{ animationDelay: '2s', backgroundColor: 'rgba(20, 120, 50, 0.3)' }}
+          style={{
+            animationDelay: '2s',
+            backgroundColor: 'rgba(20, 120, 50, 0.3)',
+          }}
         />
         <div
           className="absolute bottom-10 left-20 w-9580px] rounded-full blur-[100px] animate-pulse-slower"
-          style={{ animationDelay: '1s', backgroundColor: 'rgba(50, 150, 50, 0.25)' }}
+          style={{
+            animationDelay: '1s',
+            backgroundColor: 'rgba(50, 150, 50, 0.25)',
+          }}
         />
       </section>
 
       {/* Features Section */}
       <section ref={featuresRef} className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
-          <div className={`text-center mb-16 transition-all duration-1000 ${
-            featuresInView 
-              ? 'opacity-100 translate-y-0' 
-              : 'opacity-0 translate-y-10'
-          }`}>
+          <div
+            className={`text-center mb-16 transition-all duration-1000 ${
+              featuresInView
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-10'
+            }`}
+          >
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Fitur Unggulan
             </h2>
@@ -196,18 +237,20 @@ export default function Home() {
                 <div
                   key={index}
                   className={`group bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 ${
-                    featuresInView 
-                      ? 'opacity-100 translate-y-0' 
+                    featuresInView
+                      ? 'opacity-100 translate-y-0'
                       : 'opacity-0 translate-y-10'
                   }`}
                   style={{
-                    transition: featuresInView 
+                    transition: featuresInView
                       ? 'transform 300ms ease-in-out, box-shadow 300ms ease-in-out, opacity 1000ms ease-in-out'
                       : 'transform 1000ms ease-in-out, opacity 1000ms ease-in-out',
-                    transitionDelay: featuresInView ? `0ms, 0ms, ${index * 150}ms` : `${index * 150}ms, ${index * 150}ms`
+                    transitionDelay: featuresInView
+                      ? `0ms, 0ms, ${index * 150}ms`
+                      : `${index * 150}ms, ${index * 150}ms`,
                   }}
                 >
-                  <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-green-600 rounded-xl flex items-center justify-center mb-4">
+                  <div className="w-14 h-14 bg-linear-to-br from-blue-600 to-green-600 rounded-xl flex items-center justify-center mb-4">
                     <Icon className="w-7 h-7 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">
@@ -224,11 +267,13 @@ export default function Home() {
       {/* Categories Section */}
       <section ref={categoriesRef} className="py-20 bg-white">
         <div className="container mx-auto px-4">
-          <div className={`text-center mb-16 transition-all duration-1000 ${
-            categoriesInView 
-              ? 'opacity-100 translate-y-0' 
-              : 'opacity-0 translate-y-10'
-          }`}>
+          <div
+            className={`text-center mb-16 transition-all duration-1000 ${
+              categoriesInView
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-10'
+            }`}
+          >
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Kategori Industri
             </h2>
@@ -243,16 +288,18 @@ export default function Home() {
               return (
                 <div
                   key={index}
-                  className={`bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 ${
-                    categoriesInView 
-                      ? 'opacity-100 translate-y-0' 
+                  className={`bg-linear-to-br from-gray-50 to-white border-2 border-gray-200 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 ${
+                    categoriesInView
+                      ? 'opacity-100 translate-y-0'
                       : 'opacity-0 translate-y-10'
                   }`}
                   style={{
-                    transition: categoriesInView 
+                    transition: categoriesInView
                       ? 'transform 300ms ease-in-out, box-shadow 300ms ease-in-out, opacity 1000ms ease-in-out'
                       : 'transform 1000ms ease-in-out, opacity 1000ms ease-in-out',
-                    transitionDelay: categoriesInView ? `0ms, 0ms, ${index * 150}ms` : `${index * 150}ms, ${index * 150}ms`
+                    transitionDelay: categoriesInView
+                      ? `0ms, 0ms, ${index * 150}ms`
+                      : `${index * 150}ms, ${index * 150}ms`,
                   }}
                 >
                   <div className="flex items-center space-x-3 mb-4">
@@ -279,7 +326,13 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative text-white overflow-hidden animate-gradient-wave flowing-gradient-bg" style={{background: 'linear-gradient(to bottom right, rgb(0, 0, 205), rgb(34, 139, 34))'}}>
+      <section
+        className="relative text-white overflow-hidden animate-gradient-wave flowing-gradient-bg"
+        style={{
+          background:
+            'linear-gradient(to bottom right, rgb(0, 0, 205), rgb(34, 139, 34))',
+        }}
+      >
         <div className="gradient-layer-3" />
         <div className="absolute inset-0 bg-grid-white/[0.05] bg-size-[20px_20px] z-10" />
         <div className="container mx-auto px-4 py-20 relative z-20 text-center">

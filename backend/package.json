@@ -9,7 +9,11 @@
     "dev": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["bmkg", "p3dn", "verifikasi"],
+  "keywords": [
+    "bmkg",
+    "p3dn",
+    "verifikasi"
+  ],
   "author": "Your Name",
   "license": "ISC",
   "dependencies": {

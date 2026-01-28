@@ -42,10 +42,8 @@ export default function FileUpload({
     }
 
     // Validate file type
-    const allowedTypes = [
-      'application/pdf'
-    ];
-    
+    const allowedTypes = ['application/pdf'];
+
     if (!allowedTypes.includes(selectedFile.type)) {
       alert('Hanya file PDF yang diperbolehkan');
       return;
@@ -67,11 +65,11 @@ export default function FileUpload({
         type: selectedFile.type,
         size: selectedFile.size,
         base64: base64,
-        uploadedAt: new Date().toISOString()
+        uploadedAt: new Date().toISOString(),
       };
 
       setFile(fileData);
-      
+
       if (onChange) {
         onChange(name, fileData);
       }
@@ -112,13 +110,15 @@ export default function FileUpload({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={`border-2 border-dashed rounded-xl p-6 text-center transition-all ${
-            isUploading 
+            isUploading
               ? 'border-gray-300 bg-gray-50 cursor-not-allowed'
               : isDragging
-              ? 'border-blue-500 bg-blue-50 cursor-pointer'
-              : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50 cursor-pointer'
+                ? 'border-blue-500 bg-blue-50 cursor-pointer'
+                : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50 cursor-pointer'
           }`}
-          onClick={() => !isUploading && document.getElementById(`file-${name}`).click()}
+          onClick={() =>
+            !isUploading && document.getElementById(`file-${name}`).click()
+          }
         >
           {isUploading ? (
             <>
@@ -158,7 +158,8 @@ export default function FileUpload({
                 {file.name}
               </p>
               <p className="text-xs text-gray-500">
-                {(file.size / 1024).toFixed(2)} KB • {file.type.includes('pdf') ? 'PDF' : 'DOC'}
+                {(file.size / 1024).toFixed(2)} KB •{' '}
+                {file.type.includes('pdf') ? 'PDF' : 'DOC'}
               </p>
             </div>
           </div>

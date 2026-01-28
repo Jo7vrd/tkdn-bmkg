@@ -1,12 +1,30 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { ArrowLeft, UserPlus, Building, Phone, Mail, IdCard, Briefcase } from 'lucide-react'
-import { useAuth } from '../contexts/AuthContext'
+import { useState } from 'react';
+import Link from 'next/link';
+import {
+  ArrowLeft,
+  UserPlus,
+  Building,
+  Phone,
+  Mail,
+  IdCard,
+  Briefcase,
+} from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 // PINDAHKAN InputField KE LUAR - INI YANG PENTING!
-const InputField = ({ icon: Icon, label, name, type = 'text', placeholder, required = true, value, onChange, error }) => (
+const InputField = ({
+  icon: Icon,
+  label,
+  name,
+  type = 'text',
+  placeholder,
+  required = true,
+  value,
+  onChange,
+  error,
+}) => (
   <div>
     <label className="block text-sm font-semibold text-gray-700 mb-2">
       {label} {required && <span className="text-red-500">*</span>}
@@ -24,14 +42,12 @@ const InputField = ({ icon: Icon, label, name, type = 'text', placeholder, requi
         placeholder={placeholder}
       />
     </div>
-    {error && (
-      <p className="mt-1 text-sm text-red-600">{error}</p>
-    )}
+    {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
   </div>
-)
+);
 
 export default function RegisterPage() {
-  const { register } = useAuth()
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -42,66 +58,66 @@ export default function RegisterPage() {
     phone: '',
     unit_kerja: '',
     jabatan: '',
-    ppk_name: ''
-  })
-  const [errors, setErrors] = useState({})
-  const [isLoading, setIsLoading] = useState(false)
+    ppk_name: '',
+  });
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }))
+      setErrors((prev) => ({ ...prev, [name]: '' }));
     }
-  }
+  };
 
   const validate = () => {
-    const newErrors = {}
+    const newErrors = {};
 
-    if (!formData.username) newErrors.username = 'Username wajib diisi'
-    if (!formData.email) newErrors.email = 'Email wajib diisi'
+    if (!formData.username) newErrors.username = 'Username wajib diisi';
+    if (!formData.email) newErrors.email = 'Email wajib diisi';
     else if (!formData.email.endsWith('@bmkg.go.id')) {
-      newErrors.email = 'Email harus menggunakan domain @bmkg.go.id'
+      newErrors.email = 'Email harus menggunakan domain @bmkg.go.id';
     }
-    if (!formData.password) newErrors.password = 'Password wajib diisi'
+    if (!formData.password) newErrors.password = 'Password wajib diisi';
     else if (formData.password.length < 6) {
-      newErrors.password = 'Password minimal 6 karakter'
+      newErrors.password = 'Password minimal 6 karakter';
     }
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Password tidak sama'
+      newErrors.confirmPassword = 'Password tidak sama';
     }
-    if (!formData.full_name) newErrors.full_name = 'Nama lengkap wajib diisi'
-    if (!formData.nip) newErrors.nip = 'NIP wajib diisi'
-    if (!formData.phone) newErrors.phone = 'No. HP wajib diisi'
-    if (!formData.unit_kerja) newErrors.unit_kerja = 'Unit Kerja wajib diisi'
-    if (!formData.jabatan) newErrors.jabatan = 'Jabatan wajib diisi'
+    if (!formData.full_name) newErrors.full_name = 'Nama lengkap wajib diisi';
+    if (!formData.nip) newErrors.nip = 'NIP wajib diisi';
+    if (!formData.phone) newErrors.phone = 'No. HP wajib diisi';
+    if (!formData.unit_kerja) newErrors.unit_kerja = 'Unit Kerja wajib diisi';
+    if (!formData.jabatan) newErrors.jabatan = 'Jabatan wajib diisi';
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    
-    if (!validate()) return
+    e.preventDefault();
 
-    setIsLoading(true)
+    if (!validate()) return;
+
+    setIsLoading(true);
 
     try {
-      const result = await register(formData)
-      
+      const result = await register(formData);
+
       if (result.success) {
-        alert('Registrasi berhasil! Silakan login.')
-        window.location.href = '/login'
+        alert('Registrasi berhasil! Silakan login.');
+        window.location.href = '/login';
       } else {
-        alert('Registrasi gagal: ' + result.error)
+        alert('Registrasi gagal: ' + result.error);
       }
     } catch (error) {
-      alert('Registrasi gagal: ' + error.message)
+      alert('Registrasi gagal: ' + error.message);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4">
@@ -122,7 +138,9 @@ export default function RegisterPage() {
                 <UserPlus className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-white">Registrasi Akun</h1>
+                <h1 className="text-3xl font-bold text-white">
+                  Registrasi Akun
+                </h1>
                 <p className="text-blue-100">Sistem Verifikasi P3DN BMKG</p>
               </div>
             </div>
@@ -133,7 +151,7 @@ export default function RegisterPage() {
             {/* Info Box */}
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
               <p className="text-sm text-blue-900">
-                <strong>Catatan:</strong> Registrasi hanya untuk pegawai BMKG. 
+                <strong>Catatan:</strong> Registrasi hanya untuk pegawai BMKG.
                 Email harus menggunakan domain <strong>@bmkg.go.id</strong>
               </p>
             </div>
@@ -283,7 +301,10 @@ export default function RegisterPage() {
             {/* Login Link */}
             <p className="text-center text-sm text-gray-600 mt-6">
               Sudah punya akun?{' '}
-              <Link href="/login" className="text-blue-600 font-semibold hover:text-blue-700">
+              <Link
+                href="/login"
+                className="text-blue-600 font-semibold hover:text-blue-700"
+              >
                 Login di sini
               </Link>
             </p>
@@ -291,5 +312,5 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
