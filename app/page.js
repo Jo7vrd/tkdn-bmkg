@@ -24,7 +24,7 @@ export default function RootPage() {
 
   // Loading state
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-600 via-indigo-700 to-purple-800">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800">
       <div className="text-center">
         <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4" />
         <p className="text-white text-lg font-semibold">Loading...</p>

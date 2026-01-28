@@ -273,6 +273,9 @@ export default function EvaluatePage() {
         .map((key) => ({
           type: key,
           name: documents[key]?.name,
+          base64: documents[key]?.base64, // Include base64 data for preview
+          size: documents[key]?.size,
+          uploadedAt: documents[key]?.uploadedAt,
         })),
       items: results,
       submissionDate: new Date().toISOString(),
@@ -433,8 +436,7 @@ export default function EvaluatePage() {
           <div className="text-sm text-yellow-900">
             <p className="font-semibold mb-1">Dokumen Pendukung</p>
             <p>
-              Upload semua dokumen yang diperlukan. File harus dalam format PDF,
-              DOC, atau DOCX (Max 5MB per file).
+              Upload semua dokumen yang diperlukan. File harus dalam format PDF (Max 5MB per file).
             </p>
           </div>
         </div>

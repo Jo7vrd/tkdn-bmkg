@@ -7,7 +7,7 @@ export default function FileUpload({
   label,
   description,
   required = false,
-  accept = '.pdf,.doc,.docx',
+  accept = '.pdf',
   onChange,
   name,
 }) {
@@ -43,13 +43,11 @@ export default function FileUpload({
 
     // Validate file type
     const allowedTypes = [
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      'application/pdf'
     ];
     
     if (!allowedTypes.includes(selectedFile.type)) {
-      alert('Hanya file PDF, DOC, atau DOCX yang diperbolehkan');
+      alert('Hanya file PDF yang diperbolehkan');
       return;
     }
 
@@ -139,7 +137,7 @@ export default function FileUpload({
                 </span>{' '}
                 atau drag & drop
               </p>
-              <p className="text-xs text-gray-500">PDF, DOC, DOCX (Max. 5MB)</p>
+              <p className="text-xs text-gray-500">PDF (Max. 5MB)</p>
             </>
           )}
           <input

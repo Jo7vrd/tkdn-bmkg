@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, CheckCircle, XCircle, FileText, AlertCircle, Calendar, User, Mail, Phone, Building, Briefcase, Eye, Download } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, FileText, AlertCircle, Calendar, User, Mail, Phone, Building, Briefcase, Eye, Download, FileDown } from 'lucide-react';
 import Link from 'next/link';
-import { getEvaluationById, updateEvaluationStatus } from '../../../../lib/storage';
+import { getEvaluationById, updateEvaluationStatus, getEvaluations } from '../../../../lib/storage';
 import PDFModal from '../../../../components/PDFModal';
 
 export default function ReviewSubmission({ params }) {
@@ -18,6 +18,11 @@ export default function ReviewSubmission({ params }) {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pdfPreview, setPdfPreview] = useState({ isOpen: false, url: '', title: '' });
+  const [justificationReview, setJustificationReview] = useState({
+    status: '',
+    reason: ''
+  });
+  const [showJustificationModal, setShowJustificationModal] = useState(false);
 
   // Fetch data
   useEffect(() => {
@@ -103,25 +108,80 @@ export default function ReviewSubmission({ params }) {
       minute: '2-digit',
     });
   };
+  const handleJustificationReview = async (action) => {
+    if (action === 'reject' && !justificationReview.reason) {
+      alert('Alasan penolakan harus diisi');
+      return;
+    }
 
+    try {
+      const resolvedParams = await params;
+      const evaluations = getEvaluations();
+      const index = evaluations.findIndex((e) => e.id === resolvedParams.id);
+      
+      if (index !== -1 && evaluations[index].justificationDocument) {
+        evaluations[index].justificationDocument.status = action === 'approve' ? 'approved' : 'rejected';
+        evaluations[index].justificationDocument.reviewedAt = new Date().toISOString();
+        evaluations[index].justificationDocument.reviewedBy = 'Admin';
+        
+        if (action === 'reject') {
+          evaluations[index].justificationDocument.rejectionReason = justificationReview.reason;
+        }
+        
+        localStorage.setItem('tkdn_evaluations', JSON.stringify(evaluations));
+        
+        // Update local state immediately
+        setSubmission(evaluations[index]);
+        setShowJustificationModal(false);
+        setJustificationReview({ status: '', reason: '' });
+        
+        alert(`Dokumen justifikasi ${action === 'approve' ? 'disetujui' : 'ditolak'}!`);
+      }
+    } catch (error) {
+      alert('Gagal menyimpan review: ' + error.message);
+    }
+  };
+
+  const handlePreviewJustification = () => {
+    if (submission?.justificationDocument?.data) {
+      const doc = submission.justificationDocument;
+      setPdfPreview({
+        isOpen: true,
+        url: doc.data,
+        title: doc.name || 'Dokumen Justifikasi',
+        fileType: doc.type || 'application/pdf'
+      });
+    } else {
+      alert('Data dokumen tidak tersedia untuk preview');
+    }
+  };
   const handlePreviewDocument = (doc) => {
-    // Construct the document URL from public/documents folder
-    const docUrl = `/documents/${doc.name}`;
-    setPdfPreview({
-      isOpen: true,
-      url: docUrl,
-      title: doc.type.replace(/_/g, ' ').toUpperCase()
-    });
+    // Check if document has base64 data (from FileUpload component uses 'base64', justification uses 'data')
+    const docData = doc.base64 || doc.data;
+    if (docData) {
+      setPdfPreview({
+        isOpen: true,
+        url: docData,
+        title: documentLabels[doc.type] || doc.type.replace(/_/g, ' ').toUpperCase(),
+        fileType: doc.type
+      });
+    } else {
+      alert('Data dokumen tidak tersedia untuk preview');
+    }
   };
 
   const handleDownloadDocument = (doc) => {
-    const docUrl = `/documents/${doc.name}`;
-    const link = document.createElement('a');
-    link.href = docUrl;
-    link.download = doc.name;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const docData = doc.base64 || doc.data;
+    if (docData) {
+      const link = document.createElement('a');
+      link.href = docData;
+      link.download = doc.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      alert('Data dokumen tidak tersedia untuk download');
+    }
   };
 
   if (!submission) {
@@ -338,6 +398,124 @@ export default function ReviewSubmission({ params }) {
               </div>
             </div>
 
+            {/* Justification Document Section */}
+            {submission.status === 'accepted' && submission.presentationDate && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                  <FileDown className="w-5 h-5 mr-2 text-yellow-600" />
+                  Dokumen Justifikasi Barang Import
+                </h2>
+                
+                {submission.justificationDocument ? (
+                  <div className="space-y-3">
+                    <div className="bg-linear-to-r from-yellow-50 to-amber-50 border-2 border-yellow-200 rounded-xl p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center space-x-3 flex-1">
+                          <div className="w-10 h-10 bg-yellow-600 rounded-lg flex items-center justify-center">
+                            <FileText className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900">
+                              {submission.justificationDocument.name}
+                            </p>
+                            <p className="text-xs text-gray-600">
+                              Diupload: {formatDate(submission.justificationDocument.uploadedAt)}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          {submission.justificationDocument.status === 'pending_review' && (
+                            <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-semibold">
+                              Menunggu Review
+                            </span>
+                          )}
+                          {submission.justificationDocument.status === 'approved' && (
+                            <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold flex items-center">
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              Disetujui
+                            </span>
+                          )}
+                          {submission.justificationDocument.status === 'rejected' && (
+                            <span className="text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full font-semibold flex items-center">
+                              <XCircle className="w-3 h-3 mr-1" />
+                              Ditolak
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Preview Button */}
+                      <div className="mt-3 pt-3 border-t border-yellow-200">
+                        <button
+                          onClick={handlePreviewJustification}
+                          className="w-full flex items-center justify-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all"
+                        >
+                          <Eye className="w-4 h-4" />
+                          <span>Preview Dokumen</span>
+                        </button>
+                      </div>
+                      
+                      {submission.justificationDocument.status === 'pending_review' && (
+                        <div className="mt-4 pt-4 border-t border-yellow-200">
+                          <p className="text-sm font-semibold text-gray-900 mb-3">
+                            Review Dokumen Justifikasi:
+                          </p>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => {
+                                setJustificationReview({ status: 'approve', reason: '' });
+                                setShowJustificationModal(true);
+                              }}
+                              className="flex-1 flex items-center justify-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                              <span>Setujui</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setJustificationReview({ status: 'reject', reason: '' });
+                                setShowJustificationModal(true);
+                              }}
+                              className="flex-1 flex items-center justify-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-all"
+                            >
+                              <XCircle className="w-4 h-4" />
+                              <span>Tolak</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {submission.justificationDocument.status === 'rejected' && (
+                        <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3">
+                          <p className="text-xs font-semibold text-red-900 mb-1">
+                            Alasan Penolakan:
+                          </p>
+                          <p className="text-xs text-red-800">
+                            {submission.justificationDocument.rejectionReason || 'Tidak ada keterangan'}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {submission.justificationDocument.status === 'approved' && (
+                        <div className="mt-3 bg-green-50 border border-green-200 rounded-lg p-3">
+                          <p className="text-xs text-green-800">
+                            <CheckCircle className="w-3 h-3 inline mr-1" />
+                            Dokumen telah disetujui pada {formatDate(submission.justificationDocument.reviewedAt)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                    <FileDown className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                    <p className="text-gray-500 text-sm">Belum ada dokumen justifikasi yang diupload</p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Items List */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-4">Daftar Items Pengajuan</h2>
@@ -530,10 +708,81 @@ export default function ReviewSubmission({ params }) {
       {/* PDF Preview Modal */}
       <PDFModal
         isOpen={pdfPreview.isOpen}
-        onClose={() => setPdfPreview({ isOpen: false, url: '', title: '' })}
+        onClose={() => setPdfPreview({ isOpen: false, url: '', title: '', fileType: '' })}
         pdfUrl={pdfPreview.url}
         title={pdfPreview.title}
+        fileType={pdfPreview.fileType}
       />
+
+      {/* Justification Review Modal */}
+      {showJustificationModal && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowJustificationModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={`px-6 py-4 rounded-t-2xl ${
+              justificationReview.status === 'approve' 
+                ? 'bg-linear-to-r from-green-500 to-emerald-600' 
+                : 'bg-linear-to-r from-red-500 to-rose-600'
+            }`}>
+              <h2 className="text-xl font-bold text-white flex items-center">
+                {justificationReview.status === 'approve' ? (
+                  <>
+                    <CheckCircle className="w-6 h-6 mr-2" />
+                    Setujui Dokumen Justifikasi
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-6 h-6 mr-2" />
+                    Tolak Dokumen Justifikasi
+                  </>
+                )}
+              </h2>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <p className="text-gray-700">
+                {justificationReview.status === 'approve' 
+                  ? 'Apakah Anda yakin ingin menyetujui dokumen justifikasi ini?' 
+                  : 'Silakan berikan alasan penolakan dokumen justifikasi:'}
+              </p>
+
+              {justificationReview.status === 'reject' && (
+                <textarea
+                  value={justificationReview.reason}
+                  onChange={(e) => setJustificationReview({...justificationReview, reason: e.target.value})}
+                  rows="4"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none"
+                  placeholder="Jelaskan alasan penolakan dokumen..."
+                />
+              )}
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowJustificationModal(false)}
+                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-all"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={() => handleJustificationReview(justificationReview.status)}
+                  className={`flex-1 py-3 rounded-xl font-semibold text-white transition-all ${
+                    justificationReview.status === 'approve'
+                      ? 'bg-linear-to-r from-green-600 to-emerald-700 hover:shadow-lg'
+                      : 'bg-linear-to-r from-red-600 to-rose-700 hover:shadow-lg'
+                  }`}
+                >
+                  {justificationReview.status === 'approve' ? 'Setujui' : 'Tolak'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

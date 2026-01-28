@@ -207,7 +207,7 @@ export default function Home() {
                     transitionDelay: featuresInView ? `0ms, 0ms, ${index * 150}ms` : `${index * 150}ms, ${index * 150}ms`
                   }}
                 >
-                  <div className="w-14 h-14 bg-linear-to-br from-blue-600 to-green-600 rounded-xl flex items-center justify-center mb-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-green-600 rounded-xl flex items-center justify-center mb-4">
                     <Icon className="w-7 h-7 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">
@@ -243,7 +243,7 @@ export default function Home() {
               return (
                 <div
                   key={index}
-                  className={`bg-linear-to-brrom-gray-50 to-white border-2 border-gray-200 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 ${
+                  className={`bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 ${
                     categoriesInView 
                       ? 'opacity-100 translate-y-0' 
                       : 'opacity-0 translate-y-10'

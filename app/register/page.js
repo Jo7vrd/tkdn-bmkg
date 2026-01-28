@@ -104,7 +104,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <Link
           href="/login"
@@ -116,7 +116,7 @@ export default function RegisterPage() {
 
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-6">
+          <div className="bg-linear-to-r from-blue-600 to-indigo-700 px-8 py-6">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
                 <UserPlus className="w-7 h-7 text-white" />
@@ -265,7 +265,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-8 bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-4 rounded-xl font-bold text-lg hover:shadow-2xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              className="w-full mt-8 bg-linear-to-r from-blue-600 to-indigo-700 text-white py-4 rounded-xl font-bold text-lg hover:shadow-2xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               {isLoading ? (
                 <>
