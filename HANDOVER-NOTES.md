@@ -4,9 +4,9 @@
 
 **Nama Project**: TKDN Evaluator  
 **Developer**: Jonathan Alvarado  
-**Periode Magang**: [Sesuaikan dengan periode magang kamu]  
+**Periode Magang**: 13 Januari 2026 - 13 Februari 2026
 **Status**: ✅ Ready for Deployment  
-**Repository**: [Link repository Git kamu]
+**Repository**: (https://github.com/Jo7vrd/tkdn-bmkg)
 
 ---
 
