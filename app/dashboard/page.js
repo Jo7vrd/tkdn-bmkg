@@ -471,10 +471,10 @@ export default function DashboardPage() {
               <div
                 className={`px-8 py-6 sticky top-0 z-10 ${
                   selectedSubmission.status === 'accepted'
-                    ? 'bg-linear-to-rrom-green-500 to-emerald-600'
+                    ? 'bg-gradient-to-r from-green-500 to-emerald-600'
                     : selectedSubmission.status === 'rejected'
-                      ? 'bg-linear-to-r from-red-500 to-rose-600'
-                      : 'bg-linear-to-r from-blue-600 to-indigo-700'
+                      ? 'bg-gradient-to-r from-red-500 to-rose-600'
+                      : 'bg-gradient-to-r from-blue-600 to-indigo-700'
                 }`}
               >
                 <div className="flex items-center justify-between">
