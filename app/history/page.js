@@ -205,7 +205,7 @@ export default function HistoryPage() {
     <div className="min-h-screen pt-20 bg-linear-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-8 animate-fade-in">
           <Link
             href="/"
             className="inline-flex items-center space-x-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
@@ -234,7 +234,7 @@ export default function HistoryPage() {
         </div>
 
         {/* Toolbar */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8 animate-fade-in">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="md:col-span-2">
               <div className="relative">
@@ -291,7 +291,7 @@ export default function HistoryPage() {
 
         {/* Content */}
         {filteredEvaluations.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+          <div className="bg-white rounded-2xl shadow-lg p-12 text-center animate-fade-in">
             <History className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-gray-900 mb-2">
               {evaluations.length === 0
@@ -313,7 +313,7 @@ export default function HistoryPage() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
             {/* List */}
             <div className="lg:col-span-2 space-y-4">
               {filteredEvaluations.map((evaluation) => {

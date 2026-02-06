@@ -17,6 +17,7 @@ import {
   Eye,
   Download,
   FileDown,
+  Clock,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -24,9 +25,11 @@ import {
   updateEvaluationStatus,
 } from '../../../../lib/api';
 import PDFModal from '../../../../components/PDFModal';
+import { useToast } from '../../../../hooks/useToast';
 
 export default function ReviewSubmission({ params }) {
   const router = useRouter();
+  const { showToast, ToastContainer } = useToast();
   const [submission, setSubmission] = useState(null);
   const [reviewData, setReviewData] = useState({
     status: '',
@@ -127,15 +130,18 @@ export default function ReviewSubmission({ params }) {
       const resolvedParams = await params;
       const evaluationId = resolvedParams.id;
 
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+      const documentUrl = `${apiUrl}/evaluations/${evaluationId}/documents/${doc.id}`;
+      console.log('📄 Fetching document:', documentUrl);
+
       // Fetch document from API
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/evaluations/${evaluationId}/documents/${doc.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(documentUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log('📥 Response status:', response.status, response.statusText);
 
       if (!response.ok) {
         throw new Error('Gagal mengambil dokumen');
@@ -143,16 +149,141 @@ export default function ReviewSubmission({ params }) {
 
       // Get file as blob
       const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
+      console.log('✅ Blob received:', blob.size, 'bytes, type:', blob.type);
+      
+      const blobUrl = URL.createObjectURL(blob);
 
       setPdfPreview({
         isOpen: true,
-        url: url,
+        url: blobUrl,
         title: doc.file_name || doc.name || 'Dokumen',
       });
     } catch (error) {
       console.error('Error previewing document:', error);
-      alert('Gagal menampilkan dokumen: ' + error.message);
+      showToast('Gagal menampilkan dokumen: ' + error.message, 'error');
+    }
+  };
+
+  const handlePreviewJustification = async () => {
+    try {
+      if (!submission?.justificationDocument) {
+        showToast('Dokumen justifikasi tidak ditemukan', 'warning');
+        return;
+      }
+
+      const token = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('token='))
+        ?.split('=')[1];
+
+      if (!token) {
+        alert('Sesi Anda telah berakhir. Silakan login kembali.');
+        router.push('/login');
+        return;
+      }
+
+      const resolvedParams = await params;
+      const evaluationId = resolvedParams.id;
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+      const url = `${apiUrl}/evaluations/${evaluationId}/documents/${submission.justificationDocument.id}`;
+      console.log('📄 Fetching justification document:', url);
+
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log('📥 Response status:', response.status, response.statusText);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Error response:', errorText);
+        throw new Error(`Gagal mengambil dokumen: ${response.status} ${response.statusText}`);
+      }
+
+      const blob = await response.blob();
+      console.log('✅ Blob received:', blob.size, 'bytes, type:', blob.type);
+      
+      const url2 = URL.createObjectURL(blob);
+
+      setPdfPreview({
+        isOpen: true,
+        url: url2,
+        title: submission.justificationDocument.fileName || 'Dokumen Justifikasi',
+      });
+    } catch (error) {
+      console.error('❌ Error previewing justification document:', error);
+      showToast('Gagal menampilkan dokumen: ' + error.message, 'error');
+    }
+  };
+
+  const handleJustificationReviewSubmit = async () => {
+    try {
+      if (!justificationReview.status) {
+        showToast('Silakan pilih status review (Approve atau Reject)', 'warning');
+        return;
+      }
+      if (justificationReview.status === 'reject' && !justificationReview.reason.trim()) {
+        showToast('Alasan penolakan harus diisi', 'warning');
+        return;
+      }
+
+      setIsSubmitting(true);
+
+      const token = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('token='))
+        ?.split('=')[1];
+
+      if (!token) {
+        alert('Sesi Anda telah berakhir. Silakan login kembali.');
+        router.push('/login');
+        return;
+      }
+
+      const resolvedParams = await params;
+      const evaluationId = resolvedParams.id;
+      
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+      const url = `${apiUrl}/evaluations/${evaluationId}/justification/review`;
+
+      const response = await fetch(url, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          status: justificationReview.status === 'approve' ? 'approved' : 'rejected',
+          reason: justificationReview.reason,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Gagal menyimpan review');
+      }
+
+      showToast(
+        data.message || `Dokumen justifikasi berhasil ${justificationReview.status === 'approve' ? 'disetujui' : 'ditolak'}`,
+        'success'
+      );
+      
+      // Refresh submission data
+      const updated = await getEvaluationById(evaluationId);
+      setSubmission(updated);
+      
+      // Close modal and reset form
+      setShowJustificationModal(false);
+      setJustificationReview({ status: '', reason: '' });
+    } catch (error) {
+      console.error('❌ Error submitting justification review:', error);
+      showToast('Gagal menyimpan review: ' + error.message, 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -164,8 +295,8 @@ export default function ReviewSubmission({ params }) {
         ?.split('=')[1];
 
       if (!token) {
-        alert('Sesi Anda telah berakhir. Silakan login kembali.');
-        router.push('/login');
+        showToast('Sesi Anda telah berakhir. Silakan login kembali.', 'warning');
+        setTimeout(() => router.push('/login'), 2000);
         return;
       }
 
@@ -197,17 +328,17 @@ export default function ReviewSubmission({ params }) {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading document:', error);
-      alert('Gagal mengunduh dokumen: ' + error.message);
+      showToast('Gagal mengunduh dokumen: ' + error.message, 'error');
     }
   };
 
   const openConfirmation = () => {
     if (!reviewData.status) {
-      alert('Silakan pilih status review (Approve/Reject)');
+      showToast('Silakan pilih status review (Approve/Reject)', 'warning');
       return;
     }
     if (!reviewData.notes) {
-      alert('Catatan review wajib diisi');
+      showToast('Catatan review wajib diisi', 'warning');
       return;
     }
     setShowConfirmation(true);
@@ -224,7 +355,7 @@ export default function ReviewSubmission({ params }) {
   };
   const handleJustificationReview = async (action) => {
     if (action === 'reject' && !justificationReview.reason) {
-      alert('Alasan penolakan harus diisi');
+      showToast('Alasan penolakan harus diisi', 'warning');
       return;
     }
 
@@ -252,44 +383,36 @@ export default function ReviewSubmission({ params }) {
         setShowJustificationModal(false);
         setJustificationReview({ status: '', reason: '' });
 
-        alert(
-          `Dokumen justifikasi ${action === 'approve' ? 'disetujui' : 'ditolak'}!`
+        showToast(
+          `Dokumen justifikasi ${action === 'approve' ? 'disetujui' : 'ditolak'}!`,
+          'success'
         );
       }
     } catch (error) {
-      alert('Gagal menyimpan review: ' + error.message);
-    }
-  };
-
-  const handlePreviewJustification = () => {
-    if (submission?.justificationDocument?.data) {
-      const doc = submission.justificationDocument;
-      setPdfPreview({
-        isOpen: true,
-        url: doc.data,
-        title: doc.name || 'Dokumen Justifikasi',
-        fileType: doc.type || 'application/pdf',
-      });
-    } else {
-      alert('Data dokumen tidak tersedia untuk preview');
+      showToast('Gagal menyimpan review: ' + error.message, 'error');
     }
   };
 
   if (!submission) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
+      <>
+        <ToastContainer />
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-gray-600">Loading...</p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16">
-      {/* Confirmation Modal */}
-      {showConfirmation && (
+    <>
+      <ToastContainer />
+      <div className="min-h-screen bg-gray-50 pt-16">
+        {/* Confirmation Modal */}
+        {showConfirmation && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
             <div className="flex items-center space-x-3 mb-4">
@@ -540,33 +663,30 @@ export default function ReviewSubmission({ params }) {
                             </div>
                             <div>
                               <p className="font-semibold text-gray-900">
-                                {submission.justificationDocument.name}
+                                {submission.justificationDocument.fileName || 'Dokumen Justifikasi'}
                               </p>
                               <p className="text-xs text-gray-600">
                                 Diupload:{' '}
-                                {formatDate(
-                                  submission.justificationDocument.uploadedAt
-                                )}
+                                {submission.justificationDocument.uploadedAt 
+                                  ? formatDate(submission.justificationDocument.uploadedAt)
+                                  : 'Baru saja'}
                               </p>
                             </div>
                           </div>
 
                           <div className="flex items-center space-x-2">
-                            {submission.justificationDocument.status ===
-                              'pending_review' && (
+                            {submission.justificationDocument.status === 'pending' && (
                               <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-semibold">
                                 Menunggu Review
                               </span>
                             )}
-                            {submission.justificationDocument.status ===
-                              'approved' && (
+                            {submission.justificationDocument.status === 'approved' && (
                               <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold flex items-center">
                                 <CheckCircle className="w-3 h-3 mr-1" />
                                 Disetujui
                               </span>
                             )}
-                            {submission.justificationDocument.status ===
-                              'rejected' && (
+                            {submission.justificationDocument.status === 'rejected' && (
                               <span className="text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full font-semibold flex items-center">
                                 <XCircle className="w-3 h-3 mr-1" />
                                 Ditolak
@@ -586,8 +706,7 @@ export default function ReviewSubmission({ params }) {
                           </button>
                         </div>
 
-                        {submission.justificationDocument.status ===
-                          'pending_review' && (
+                        {submission.justificationDocument.status === 'pending' && (
                           <div className="mt-4 pt-4 border-t border-yellow-200">
                             <p className="text-sm font-semibold text-gray-900 mb-3">
                               Review Dokumen Justifikasi:
@@ -623,16 +742,35 @@ export default function ReviewSubmission({ params }) {
                           </div>
                         )}
 
-                        {submission.justificationDocument.status ===
-                          'rejected' && (
+                        {submission.justificationDocument.status === 'rejected' && (
                           <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3">
                             <p className="text-xs font-semibold text-red-900 mb-1">
                               Alasan Penolakan:
                             </p>
                             <p className="text-xs text-red-800">
-                              {submission.justificationDocument
-                                .rejectionReason || 'Tidak ada keterangan'}
+                              {submission.justificationDocument.rejectionReason || 'Tidak ada keterangan'}
                             </p>
+                            <div className="mt-3 pt-3 border-t border-red-200">
+                              <div className="flex items-center space-x-2 bg-orange-50 border border-orange-300 rounded-lg px-3 py-2">
+                                <Clock className="w-4 h-4 text-orange-600 animate-pulse" />
+                                <p className="text-xs font-semibold text-orange-800">
+                                  Menunggu revisi dokumen dari user
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {submission.justificationDocument.status === 'approved' && submission.justificationDocument.reviewedBy && (
+                          <div className="mt-3 bg-green-50 border border-green-200 rounded-lg p-3">
+                            <p className="text-xs font-semibold text-green-900 mb-1">
+                              Disetujui oleh: {submission.justificationDocument.reviewedBy}
+                            </p>
+                            {submission.justificationDocument.reviewedAt && (
+                              <p className="text-xs text-green-700">
+                                Tanggal: {formatDate(submission.justificationDocument.reviewedAt)}
+                              </p>
+                            )}
                           </div>
                         )}
 
@@ -688,15 +826,15 @@ export default function ReviewSubmission({ params }) {
                           </p>
                         </div>
                         <div>
-                          {item.isCompliant ? (
+                          {((parseFloat(item.tkdn || item.tkdnValue || 0) + parseFloat(item.bmp || item.bmpValue || 0)) >= 40) ? (
                             <span className="inline-flex items-center space-x-1 px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
                               <CheckCircle className="w-3 h-3" />
-                              <span>Compliant</span>
+                              <span>Memenuhi (≥40%)</span>
                             </span>
                           ) : (
-                            <span className="inline-flex items-center space-x-1 px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+                            <span className="inline-flex items-center space-x-1 px-3 py-1 bg-amber-100 text-amber-700 text-xs font-semibold rounded-full">
                               <XCircle className="w-3 h-3" />
-                              <span>Not Compliant</span>
+                              <span>Tidak Memenuhi (&lt;40%)</span>
                             </span>
                           )}
                         </div>
@@ -972,29 +1110,30 @@ export default function ReviewSubmission({ params }) {
               <div className="flex space-x-3">
                 <button
                   onClick={() => setShowJustificationModal(false)}
-                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-all"
+                  disabled={isSubmitting}
+                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Batal
                 </button>
                 <button
-                  onClick={() =>
-                    handleJustificationReview(justificationReview.status)
-                  }
-                  className={`flex-1 py-3 rounded-xl font-semibold text-white transition-all ${
+                  onClick={handleJustificationReviewSubmit}
+                  disabled={isSubmitting}
+                  className={`flex-1 py-3 rounded-xl font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                     justificationReview.status === 'approve'
                       ? 'bg-linear-to-r from-green-600 to-emerald-700 hover:shadow-lg'
                       : 'bg-linear-to-r from-red-600 to-rose-700 hover:shadow-lg'
                   }`}
                 >
-                  {justificationReview.status === 'approve'
+                  {isSubmitting ? 'Memproses...' : (justificationReview.status === 'approve'
                     ? 'Setujui'
-                    : 'Tolak'}
+                    : 'Tolak')}
                 </button>
               </div>
             </div>
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

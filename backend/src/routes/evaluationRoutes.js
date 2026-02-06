@@ -6,6 +6,8 @@ import {
   getEvaluationById,
   updateEvaluationStatus,
   getDocument,
+  uploadJustificationDocument,
+  reviewJustificationDocument,
 } from '../controllers/evaluationController.js';
 import { authenticateToken } from '../middleware/authMiddleware.js';
 
@@ -25,6 +27,12 @@ router.get('/:id', getEvaluationById);
 
 // PATCH /api/evaluations/:id/status - Update status (admin only)
 router.patch('/:id/status', updateEvaluationStatus);
+
+// POST /api/evaluations/:id/justification - Upload justification document
+router.post('/:id/justification', uploadJustificationDocument);
+
+// PATCH /api/evaluations/:id/justification/review - Review justification document (admin only)
+router.patch('/:id/justification/review', reviewJustificationDocument);
 
 // GET /api/evaluations/:evaluationId/documents/:documentId - Download document
 router.get('/:evaluationId/documents/:documentId', getDocument);

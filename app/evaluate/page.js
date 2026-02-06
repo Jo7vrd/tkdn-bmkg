@@ -975,7 +975,7 @@ export default function EvaluatePage() {
           <span>Kembali ke Beranda</span>
         </Link>
 
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
           {/* Header */}
           <div className="bg-linear-to-r from-blue-600 to-indigo-700 px-8 py-6">
             <h1 className="text-3xl font-bold text-white mb-2">

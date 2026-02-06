@@ -146,7 +146,9 @@ export const getEvaluations = async (req, res) => {
 
         // Get documents (metadata only, no binary data)
         const documentsResult = await pool.query(
-          `SELECT id, document_type, file_name, file_size, file_type, uploaded_at 
+          `SELECT id, document_type, file_name, file_size, file_type, uploaded_at,
+                  justification_status, justification_reviewed_at, 
+                  justification_reviewed_by, justification_rejection_reason
            FROM evaluation_documents WHERE evaluation_id = $1`,
           [evaluation.id]
         );
@@ -204,7 +206,9 @@ export const getEvaluationById = async (req, res) => {
 
     // Get documents (without binary data for list)
     const documentsResult = await pool.query(
-      `SELECT id, document_type, file_name, file_size, file_type, uploaded_at 
+      `SELECT id, document_type, file_name, file_size, file_type, uploaded_at,
+              justification_status, justification_reviewed_at, 
+              justification_reviewed_by, justification_rejection_reason
        FROM evaluation_documents WHERE evaluation_id = $1`,
       [id]
     );
@@ -384,3 +388,183 @@ export const getDocument = async (req, res) => {
     });
   }
 };
+
+/**
+ * POST /api/evaluations/:id/justification
+ * Upload justification document for accepted evaluation
+ */
+export const uploadJustificationDocument = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+    const { fileName, fileSize, fileType, fileData } = req.body;
+
+    // Verify evaluation belongs to user and is accepted
+    const evaluationResult = await pool.query(
+      'SELECT user_id, status FROM evaluations WHERE id = $1',
+      [id]
+    );
+
+    if (evaluationResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Evaluasi tidak ditemukan',
+      });
+    }
+
+    const evaluation = evaluationResult.rows[0];
+
+    if (evaluation.user_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Akses ditolak',
+      });
+    }
+
+    if (evaluation.status !== 'accepted') {
+      return res.status(400).json({
+        success: false,
+        message: 'Dokumen justifikasi hanya dapat diunggah untuk pengajuan yang disetujui',
+      });
+    }
+
+    // Convert base64 to binary
+    const base64Data = fileData.split(',')[1] || fileData;
+    const binaryData = Buffer.from(base64Data, 'base64');
+
+    // Delete old justification document if exists (for revision)
+    await pool.query(
+      `DELETE FROM evaluation_documents 
+       WHERE evaluation_id = $1 AND document_type = 'justification'`,
+      [id]
+    );
+
+    // Insert new justification document with pending status
+    const result = await pool.query(
+      `INSERT INTO evaluation_documents (
+        evaluation_id, document_type, file_name, file_size, file_type, file_data,
+        justification_status
+      ) VALUES ($1, $2, $3, $4, $5, $6, 'pending')
+      RETURNING id`,
+      [id, 'justification', fileName, fileSize, fileType, binaryData]
+    );
+
+    res.status(201).json({
+      success: true,
+      message: 'Dokumen justifikasi berhasil diunggah',
+      data: {
+        documentId: result.rows[0].id,
+      },
+    });
+  } catch (error) {
+    console.error('❌ Error uploading justification document:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mengunggah dokumen justifikasi',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * PATCH /api/evaluations/:id/justification/review
+ * Review justification document (admin only)
+ */
+export const reviewJustificationDocument = async (req, res) => {
+  try {
+    // Check if admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Akses ditolak. Hanya admin yang dapat mereview dokumen.',
+      });
+    }
+
+    const { id } = req.params;
+    const { status, reason } = req.body;
+
+    // Validate status
+    if (!['approved', 'rejected'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Status tidak valid. Gunakan "approved" atau "rejected".',
+      });
+    }
+
+    // If rejected, reason is required
+    if (status === 'rejected' && !reason) {
+      return res.status(400).json({
+        success: false,
+        message: 'Alasan penolakan harus diisi.',
+      });
+    }
+
+    // Check if evaluation exists
+    const evaluationResult = await pool.query(
+      'SELECT id FROM evaluations WHERE id = $1',
+      [id]
+    );
+
+    if (evaluationResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Evaluasi tidak ditemukan',
+      });
+    }
+
+    // Find justification document
+    const documentResult = await pool.query(
+      `SELECT id FROM evaluation_documents 
+       WHERE evaluation_id = $1 AND document_type = 'justification'
+       ORDER BY uploaded_at DESC
+       LIMIT 1`,
+      [id]
+    );
+
+    if (documentResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Dokumen justifikasi tidak ditemukan',
+      });
+    }
+
+    const documentId = documentResult.rows[0].id;
+    const now = new Date().toISOString();
+
+    // Update document with review status
+    const updateQuery = status === 'approved'
+      ? `UPDATE evaluation_documents 
+         SET justification_status = $1, 
+             justification_reviewed_at = $2,
+             justification_reviewed_by = $3
+         WHERE id = $4
+         RETURNING *`
+      : `UPDATE evaluation_documents 
+         SET justification_status = $1, 
+             justification_rejection_reason = $2,
+             justification_reviewed_at = $3,
+             justification_reviewed_by = $4
+         WHERE id = $5
+         RETURNING *`;
+
+    const params = status === 'approved'
+      ? [status, now, req.user.nama || 'Admin', documentId]
+      : [status, reason, now, req.user.nama || 'Admin', documentId];
+
+    const result = await pool.query(updateQuery, params);
+
+    res.json({
+      success: true,
+      message: `Dokumen justifikasi berhasil ${status === 'approved' ? 'disetujui' : 'ditolak'}`,
+      data: result.rows[0],
+    });
+  } catch (error) {
+    console.error('❌ Error reviewing justification document:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mereview dokumen justifikasi',
+      error: error.message,
+    });
+  }
+};
+
