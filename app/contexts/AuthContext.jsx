@@ -43,32 +43,22 @@ export const AuthProvider = ({ children }) => {
         throw new Error('Login hanya bisa dilakukan di client side');
       }
 
-      // TODO: Replace dengan API call yang sebenarnya
-      // Simulasi login
-      let userData;
-      let token;
+      // Call backend API
+      const response = await fetch('http://localhost:8000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-      if (email === 'admin@bmkg.go.id' && password === 'admin123') {
-        userData = {
-          id: 1,
-          email: 'admin@bmkg.go.id',
-          username: 'admin',
-          role: 'admin',
-          full_name: 'Administrator BMKG',
-        };
-        token = 'admin-token-12345';
-      } else if (email === 'testuser@bmkg.go.id' && password === 'user123') {
-        userData = {
-          id: 2,
-          email: 'testuser@bmkg.go.id',
-          username: 'testuser',
-          role: 'user',
-          full_name: 'Test User BMKG',
-        };
-        token = 'user-token-67890';
-      } else {
-        throw new Error('Email atau password salah');
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Login gagal');
       }
+
+      const { token, user: userData } = data;
 
       // Simpan ke localStorage
       localStorage.setItem('user', JSON.stringify(userData));
@@ -94,24 +84,22 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Register function
-  const register = async () => {
+  const register = async (formData) => {
     try {
-      // TODO: Replace dengan API call yang sebenarnya
-      // Simulasi registrasi
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Call backend API
+      const response = await fetch('http://localhost:8000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-      // For future use when connected to backend
-      // const userData = {
-      //   id: Date.now(),
-      //   email: formData.email,
-      //   username: formData.username,
-      //   role: 'user',
-      //   full_name: formData.full_name,
-      //   nip: formData.nip,
-      //   phone: formData.phone,
-      //   unit_kerja: formData.unit_kerja,
-      //   jabatan: formData.jabatan
-      // };
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Registrasi gagal');
+      }
 
       return { success: true, message: 'Registrasi berhasil! Silakan login.' };
     } catch (error) {

@@ -6,8 +6,8 @@ const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
   port: process.env.DB_PORT || 5432,
   database: process.env.DB_NAME || 'bmkg_p3dn',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'your_password',
+  user: process.env.DB_USER || 'jonathanalvarado',
+  password: process.env.DB_PASSWORD || '',
 });
 
 // Test connection

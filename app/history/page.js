@@ -20,6 +20,7 @@ import {
   Briefcase,
   Hash,
 } from 'lucide-react';
+import { getEvaluations } from '../../lib/api';
 
 export default function HistoryPage() {
   const [evaluations, setEvaluations] = useState([]);
@@ -28,13 +29,13 @@ export default function HistoryPage() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedEvaluation, setSelectedEvaluation] = useState(null);
 
-  const loadEvaluations = useCallback(() => {
+  const loadEvaluations = useCallback(async () => {
     try {
-      const data = localStorage.getItem('tkdn_evaluations');
-      const parsed = data ? JSON.parse(data) : [];
-      setEvaluations(parsed);
+      const data = await getEvaluations();
+      setEvaluations(data);
     } catch (error) {
       console.error('Error loading evaluations:', error);
+      alert('Gagal memuat data: ' + error.message);
       setEvaluations([]);
     }
   }, []);
@@ -73,14 +74,14 @@ export default function HistoryPage() {
   }, [evaluations, searchTerm, filterStatus]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadEvaluations();
-  }, [loadEvaluations]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     filterEvaluations();
-  }, [filterEvaluations]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [evaluations, searchTerm, filterStatus]);
 
   const handleDelete = (id) => {
     if (confirm('Apakah Anda yakin ingin menghapus evaluasi ini?')) {
@@ -182,18 +183,26 @@ export default function HistoryPage() {
     });
   };
 
-  const getOverallStatus = (items) => {
-    if (!items || items.length === 0) return { label: 'N/A', color: 'gray' };
-    const allCompliant = items.every((item) => item.isCompliant);
-    const someCompliant = items.some((item) => item.isCompliant);
-
-    if (allCompliant) return { label: 'Semua Memenuhi', color: 'green' };
-    if (someCompliant) return { label: 'Sebagian Memenuhi', color: 'yellow' };
-    return { label: 'Tidak Memenuhi', color: 'red' };
+  const getOverallStatus = (evaluation) => {
+    // Use review status instead of compliance
+    const status = evaluation?.status || 'pending';
+    
+    switch (status) {
+      case 'pending':
+        return { label: 'Menunggu Review', color: 'yellow' };
+      case 'under_review':
+        return { label: 'Sedang Direview', color: 'blue' };
+      case 'accepted':
+        return { label: 'Diterima', color: 'green' };
+      case 'rejected':
+        return { label: 'Ditolak', color: 'red' };
+      default:
+        return { label: 'N/A', color: 'gray' };
+    }
   };
 
   return (
-    <div className="min-h-screen pt-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4">
+    <div className="min-h-screen pt-20 bg-linear-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -205,7 +214,7 @@ export default function HistoryPage() {
             <span>Kembali ke Beranda</span>
           </Link>
 
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 text-white">
+          <div className="bg-linear-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 text-white">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-4xl font-bold mb-2 flex items-center">
@@ -308,7 +317,7 @@ export default function HistoryPage() {
             {/* List */}
             <div className="lg:col-span-2 space-y-4">
               {filteredEvaluations.map((evaluation) => {
-                const status = getOverallStatus(evaluation.items);
+                const status = getOverallStatus(evaluation);
                 return (
                   <div
                     key={evaluation.id}
@@ -342,7 +351,11 @@ export default function HistoryPage() {
                               ? 'bg-green-100 text-green-700'
                               : status.color === 'yellow'
                                 ? 'bg-yellow-100 text-yellow-700'
-                                : 'bg-red-100 text-red-700'
+                                : status.color === 'blue'
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : status.color === 'red'
+                                    ? 'bg-red-100 text-red-700'
+                                    : 'bg-gray-100 text-gray-700'
                           }`}
                         >
                           {status.color === 'green' ? (
@@ -472,7 +485,7 @@ export default function HistoryPage() {
                               >
                                 <CheckCircle className="w-3 h-3 text-green-600 mr-2 shrink-0" />
                                 <span className="text-gray-700 truncate">
-                                  {doc.name}
+                                  {doc.file_name || doc.name || doc.document_type || 'Dokumen'}
                                 </span>
                               </div>
                             ))}
@@ -514,7 +527,7 @@ export default function HistoryPage() {
                                   TKDN
                                 </div>
                                 <div className="text-sm font-bold text-blue-600">
-                                  {item.tkdnValue}%
+                                  {parseFloat(item.tkdnValue || item.tkdn || 0).toFixed(2)}%
                                 </div>
                               </div>
                               <div className="bg-purple-50 p-2 rounded text-center">
@@ -522,7 +535,7 @@ export default function HistoryPage() {
                                   BMP
                                 </div>
                                 <div className="text-sm font-bold text-purple-600">
-                                  {item.bmpValue}%
+                                  {parseFloat(item.bmpValue || item.bmp || 0).toFixed(2)}%
                                 </div>
                               </div>
                               <div className="bg-indigo-50 p-2 rounded text-center">
@@ -530,7 +543,7 @@ export default function HistoryPage() {
                                   Total
                                 </div>
                                 <div className="text-sm font-bold text-indigo-600">
-                                  {item.totalValue}%
+                                  {parseFloat(item.totalValue || ((parseFloat(item.tkdnValue || item.tkdn || 0)) + (parseFloat(item.bmpValue || item.bmp || 0)))).toFixed(2)}%
                                 </div>
                               </div>
                             </div>

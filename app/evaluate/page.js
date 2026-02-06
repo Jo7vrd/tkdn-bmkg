@@ -14,7 +14,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import Link from 'next/link';
-import { saveEvaluation } from '../../lib/storage';
+import { saveEvaluation } from '../../lib/api';
 import FileUpload from '../../components/FileUpload';
 
 export default function EvaluatePage() {
@@ -268,24 +268,30 @@ export default function EvaluatePage() {
 
     setEvaluationResults(results);
 
-    // Save to history with PPK data
-    saveEvaluation({
-      ppkData,
-      documents: Object.keys(documents)
-        .filter((key) => documents[key])
-        .map((key) => ({
-          type: key,
-          name: documents[key]?.name,
-          base64: documents[key]?.base64, // Include base64 data for preview
-          size: documents[key]?.size,
-          uploadedAt: documents[key]?.uploadedAt,
-        })),
-      items: results,
-      submissionDate: new Date().toISOString(),
-    });
+    // Save to server API
+    try {
+      await saveEvaluation({
+        ppkData,
+        documents: Object.keys(documents)
+          .filter((key) => documents[key])
+          .map((key) => ({
+            type: key,
+            name: documents[key]?.name,
+            base64: documents[key]?.base64,
+            size: documents[key]?.size,
+            uploadedAt: documents[key]?.uploadedAt,
+          })),
+        items: results,
+      });
 
-    setIsCalculating(false);
-    setCurrentStep(4);
+      alert('✅ Evaluasi berhasil disimpan ke server!');
+      setIsCalculating(false);
+      setCurrentStep(4);
+    } catch (error) {
+      console.error('Error saving:', error);
+      alert('❌ Gagal menyimpan: ' + error.message);
+      setIsCalculating(false);
+    }
   };
 
   // Reset Form

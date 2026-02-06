@@ -22,8 +22,7 @@ import Link from 'next/link';
 import {
   getEvaluationById,
   updateEvaluationStatus,
-  getEvaluations,
-} from '../../../../lib/storage';
+} from '../../../../lib/api';
 import PDFModal from '../../../../components/PDFModal';
 
 export default function ReviewSubmission({ params }) {
@@ -50,19 +49,24 @@ export default function ReviewSubmission({ params }) {
   // Fetch data
   useEffect(() => {
     const loadSubmission = async () => {
-      const resolvedParams = await params;
-      const data = getEvaluationById(resolvedParams.id);
+      try {
+        const resolvedParams = await params;
+        const data = await getEvaluationById(resolvedParams.id);
 
-      if (data) {
-        setSubmission(data);
+        if (data) {
+          setSubmission(data);
 
-        if (data.status !== 'pending' && data.status !== 'under_review') {
-          setReviewData({
-            status: data.status,
-            notes: data.reviewNotes || '',
-            presentationDate: data.presentationDate || '',
-          });
+          if (data.status !== 'pending' && data.status !== 'under_review') {
+            setReviewData({
+              status: data.status,
+              notes: data.review_notes || '',
+              presentationDate: data.presentation_date || '',
+            });
+          }
         }
+      } catch (error) {
+        console.error('Error loading submission:', error);
+        alert('Gagal memuat data: ' + error.message);
       }
     };
 
@@ -88,28 +92,112 @@ export default function ReviewSubmission({ params }) {
 
     try {
       const resolvedParams = await params;
-      const updated = updateEvaluationStatus(
-        resolvedParams.id,
-        reviewData.status,
-        {
-          reviewNotes: reviewData.notes,
-          presentationDate: reviewData.presentationDate,
-          rejectionReason:
-            reviewData.status === 'rejected' ? reviewData.notes : null,
-        }
-      );
+      await updateEvaluationStatus(resolvedParams.id, {
+        status: reviewData.status,
+        reviewNotes: reviewData.notes,
+        presentationDate: reviewData.presentationDate,
+        rejectionReason:
+          reviewData.status === 'rejected' ? reviewData.notes : null,
+      });
 
-      if (updated) {
-        alert('Review berhasil disimpan!');
-        router.push('/admin');
-      } else {
-        throw new Error('Gagal menyimpan review');
-      }
+      alert('Review berhasil disimpan!');
+      router.push('/admin');
     } catch (error) {
       alert('Gagal menyimpan review: ' + error.message);
     } finally {
       setIsSubmitting(false);
       setShowConfirmation(false);
+    }
+  };
+
+  const handlePreviewDocument = async (doc) => {
+    try {
+      const token = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('token='))
+        ?.split('=')[1];
+
+      if (!token) {
+        alert('Sesi Anda telah berakhir. Silakan login kembali.');
+        router.push('/login');
+        return;
+      }
+
+      // Get evaluation ID
+      const resolvedParams = await params;
+      const evaluationId = resolvedParams.id;
+
+      // Fetch document from API
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/evaluations/${evaluationId}/documents/${doc.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Gagal mengambil dokumen');
+      }
+
+      // Get file as blob
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      setPdfPreview({
+        isOpen: true,
+        url: url,
+        title: doc.file_name || doc.name || 'Dokumen',
+      });
+    } catch (error) {
+      console.error('Error previewing document:', error);
+      alert('Gagal menampilkan dokumen: ' + error.message);
+    }
+  };
+
+  const handleDownloadDocument = async (doc) => {
+    try {
+      const token = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('token='))
+        ?.split('=')[1];
+
+      if (!token) {
+        alert('Sesi Anda telah berakhir. Silakan login kembali.');
+        router.push('/login');
+        return;
+      }
+
+      const resolvedParams = await params;
+      const evaluationId = resolvedParams.id;
+
+      // Fetch and download
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/evaluations/${evaluationId}/documents/${doc.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Gagal mengunduh dokumen');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = doc.file_name || doc.name || 'dokumen.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      alert('Gagal mengunduh dokumen: ' + error.message);
     }
   };
 
@@ -184,35 +272,6 @@ export default function ReviewSubmission({ params }) {
       });
     } else {
       alert('Data dokumen tidak tersedia untuk preview');
-    }
-  };
-  const handlePreviewDocument = (doc) => {
-    // Check if document has base64 data (from FileUpload component uses 'base64', justification uses 'data')
-    const docData = doc.base64 || doc.data;
-    if (docData) {
-      setPdfPreview({
-        isOpen: true,
-        url: docData,
-        title:
-          documentLabels[doc.type] || doc.type.replace(/_/g, ' ').toUpperCase(),
-        fileType: doc.type,
-      });
-    } else {
-      alert('Data dokumen tidak tersedia untuk preview');
-    }
-  };
-
-  const handleDownloadDocument = (doc) => {
-    const docData = doc.base64 || doc.data;
-    if (docData) {
-      const link = document.createElement('a');
-      link.href = docData;
-      link.download = doc.name;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } else {
-      alert('Data dokumen tidak tersedia untuk download');
     }
   };
 
@@ -323,7 +382,7 @@ export default function ReviewSubmission({ params }) {
               </h1>
               <p className="text-sm text-gray-500 mt-1">
                 ID: {submission.id} • Diajukan{' '}
-                {formatDate(submission.submittedAt)}
+                {submission.submitted_at ? formatDate(submission.submitted_at) : 'N/A'}
               </p>
             </div>
 
@@ -429,10 +488,9 @@ export default function ReviewSubmission({ params }) {
                         </div>
                         <div className="flex-1">
                           <p className="text-sm font-semibold text-gray-900">
-                            {documentLabels[doc.type] ||
-                              doc.type.replace(/_/g, ' ')}
+                            {doc.type ? (documentLabels[doc.type] || doc.type.replace(/_/g, ' ')) : doc.document_type ? (documentLabels[doc.document_type] || doc.document_type.replace(/_/g, ' ')) : 'Dokumen'}
                           </p>
-                          <p className="text-xs text-gray-600">{doc.name}</p>
+                          <p className="text-xs text-gray-600">{doc.name || doc.file_name || 'N/A'}</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -648,7 +706,7 @@ export default function ReviewSubmission({ params }) {
                         <div className="bg-blue-50 p-3 rounded-lg">
                           <div className="text-xs text-blue-700 mb-1">TKDN</div>
                           <div className="text-xl font-bold text-blue-600">
-                            {item.tkdnValue}%
+                            {parseFloat(item.tkdnValue || item.tkdn || 0).toFixed(2)}%
                           </div>
                         </div>
                         <div className="bg-purple-50 p-3 rounded-lg">
@@ -656,7 +714,7 @@ export default function ReviewSubmission({ params }) {
                             BMP
                           </div>
                           <div className="text-xl font-bold text-purple-600">
-                            {item.bmpValue}%
+                            {parseFloat(item.bmpValue || item.bmp || 0).toFixed(2)}%
                           </div>
                         </div>
                         <div className="bg-indigo-50 p-3 rounded-lg">
@@ -664,7 +722,7 @@ export default function ReviewSubmission({ params }) {
                             Total
                           </div>
                           <div className="text-xl font-bold text-indigo-600">
-                            {item.totalValue}%
+                            {parseFloat(item.totalValue || ((parseFloat(item.tkdnValue || item.tkdn || 0)) + (parseFloat(item.bmpValue || item.bmp || 0)))).toFixed(2)}%
                           </div>
                         </div>
                       </div>
@@ -674,7 +732,7 @@ export default function ReviewSubmission({ params }) {
                           <span>Harga Barang Jadi:</span>
                           <span className="font-semibold">
                             Rp{' '}
-                            {parseFloat(item.final_price).toLocaleString(
+                            {(parseFloat(item.final_price || item.finalPrice) || 0).toLocaleString(
                               'id-ID'
                             )}
                           </span>
@@ -683,7 +741,7 @@ export default function ReviewSubmission({ params }) {
                           <span>Komponen Luar Negeri:</span>
                           <span className="font-semibold text-red-600">
                             Rp{' '}
-                            {parseFloat(item.foreign_price).toLocaleString(
+                            {(parseFloat(item.foreign_price || item.foreignPrice) || 0).toLocaleString(
                               'id-ID'
                             )}
                           </span>
@@ -691,7 +749,7 @@ export default function ReviewSubmission({ params }) {
                         <div className="flex justify-between py-1">
                           <span>Komponen Dalam Negeri:</span>
                           <span className="font-semibold text-green-600">
-                            Rp {item.localPrice.toLocaleString('id-ID')}
+                            Rp {(item.localPrice || ((parseFloat(item.final_price || item.finalPrice) || 0) - (parseFloat(item.foreign_price || item.foreignPrice) || 0))).toLocaleString('id-ID')}
                           </span>
                         </div>
                       </div>

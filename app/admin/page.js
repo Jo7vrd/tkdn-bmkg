@@ -11,7 +11,7 @@ import {
   Eye,
   Search,
 } from 'lucide-react';
-import { getEvaluations } from '../../lib/storage';
+import { getEvaluations } from '../../lib/api';
 
 export default function AdminDashboard() {
   const [submissions, setSubmissions] = useState([]);
@@ -20,10 +20,19 @@ export default function AdminDashboard() {
 
   // Load data after mount
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
-    const loadedSubmissions = getEvaluations();
-    setSubmissions(loadedSubmissions);
+    const loadData = async () => {
+      try {
+        setMounted(true);
+        const loadedSubmissions = await getEvaluations();
+        console.log('📊 Admin loaded evaluations:', loadedSubmissions);
+        setSubmissions(loadedSubmissions);
+      } catch (error) {
+        console.error('Error loading evaluations:', error);
+        alert('Gagal memuat data: ' + error.message);
+        setSubmissions([]);
+      }
+    };
+    loadData();
   }, []);
 
   // Status badge renderer with switch statement

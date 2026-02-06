@@ -13,7 +13,7 @@ import {
   FileDown,
   Upload,
 } from 'lucide-react';
-import { getEvaluations } from '../../lib/storage';
+import { getEvaluations } from '../../lib/api';
 import StatusBadge from '../../components/statusbadge';
 import PDFModal from '../../components/PDFModal';
 
@@ -33,9 +33,16 @@ export default function DashboardPage() {
 
   // Handle hydration - load data after component mounts
   useEffect(() => {
-    const loadData = () => {
-      const data = getEvaluations();
-      setSubmissions(data);
+    const loadData = async () => {
+      try {
+        const data = await getEvaluations();
+        console.log('📊 Dashboard loaded evaluations:', data);
+        setSubmissions(data);
+      } catch (error) {
+        console.error('Error loading evaluations:', error);
+        alert('Gagal memuat data: ' + error.message);
+        setSubmissions([]);
+      }
     };
     loadData();
   }, []);
@@ -67,30 +74,46 @@ export default function DashboardPage() {
     link.click();
   };
 
-  const handlePreviewDocument = (doc) => {
-    if (doc?.data) {
-      // For PDF files, use direct base64
-      // For Word files, use Google Docs Viewer
-      let previewUrl = doc.data;
+  const handlePreviewDocument = async (evaluationId, documentId, doc) => {
+    try {
+      const token = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('token='))
+        ?.split('=')[1];
 
-      if (
-        doc.type &&
-        (doc.type.includes('word') ||
-          doc.type.includes('msword') ||
-          doc.name?.endsWith('.doc') ||
-          doc.name?.endsWith('.docx'))
-      ) {
-        // For Word files, we need to use Google Docs Viewer
-        // Since we have base64, we'll use it directly but notify user it's better to download
-        previewUrl = doc.data;
+      if (!token) {
+        alert('Sesi Anda telah berakhir. Silakan login kembali.');
+        window.location.href = '/login';
+        return;
       }
+
+      // Fetch document from API
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/evaluations/${evaluationId}/documents/${documentId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Gagal mengambil dokumen');
+      }
+
+      // Get file as blob
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
 
       setPdfPreview({
         isOpen: true,
-        url: previewUrl,
-        title: doc.name || 'Dokumen Justifikasi',
-        fileType: doc.type || 'application/pdf',
+        url: url,
+        title: doc.file_name || doc.name || 'Dokumen',
+        fileType: doc.file_type || doc.type || 'application/pdf',
       });
+    } catch (error) {
+      console.error('Error previewing document:', error);
+      alert('Gagal menampilkan dokumen: ' + error.message);
     }
   };
 
@@ -223,7 +246,7 @@ export default function DashboardPage() {
         <div className="mb-6">
           <Link
             href="/evaluate"
-            className="inline-flex items-center space-x-2 bg-linear-to-rrom-blue-600 to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-xl transition-all"
+            className="inline-flex items-center space-x-2 bg-linear-to-r from-blue-600 to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-xl hover:from-blue-700 hover:to-indigo-800 transition-all"
           >
             <Plus className="w-5 h-5" />
             <span>Buat Pengajuan Baru</span>
@@ -416,7 +439,7 @@ export default function DashboardPage() {
                     <div className="flex items-center space-x-1">
                       <Clock className="w-3 h-3" />
                       <span>
-                        Diajukan: {formatDate(submission.submittedAt)}
+                        Diajukan: {formatDate(submission.timestamp || submission.submitted_at)}
                       </span>
                     </div>
                     {submission.reviewedAt && (
@@ -475,7 +498,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between">
                   <StatusBadge status={selectedSubmission.status} />
                   <span className="text-sm text-gray-600">
-                    Diajukan: {formatDate(selectedSubmission.submittedAt)}
+                    Diajukan: {formatDate(selectedSubmission.timestamp || selectedSubmission.submitted_at)}
                   </span>
                 </div>
 
@@ -534,15 +557,25 @@ export default function DashboardPage() {
                     {selectedSubmission.documents?.map((doc, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between py-2 border-b"
+                        className="flex items-center justify-between p-3 bg-white rounded-lg border"
                       >
-                        <span className="text-sm capitalize">
-                          {doc.type.replace(/_/g, ' ')}
-                        </span>
-                        <span className="text-xs text-green-600 flex items-center">
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          {doc.name}
-                        </span>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold capitalize">
+                            {(doc.document_type || doc.type || '').replace(/_/g, ' ')}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {doc.file_name || doc.name}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() =>
+                            handlePreviewDocument(selectedSubmission.id, doc.id, doc)
+                          }
+                          className="ml-3 p-2 bg-white hover:bg-blue-100 rounded-lg border border-blue-300 transition-all"
+                          title="Preview Dokumen"
+                        >
+                          <Eye className="w-4 h-4 text-blue-600" />
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -569,36 +602,30 @@ export default function DashboardPage() {
                               {item.model}
                             </p>
                           </div>
-                          {item.isCompliant ? (
-                            <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full flex items-center">
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              Compliant
-                            </span>
-                          ) : (
-                            <span className="text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full flex items-center">
-                              <XCircle className="w-3 h-3 mr-1" />
-                              Non-Compliant
-                            </span>
-                          )}
+                          <span className={`text-xs px-3 py-1 rounded-full flex items-center ${
+                            item.isCompliant ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                          }`}>
+                            TKDN: {parseFloat(item.tkdnValue || item.tkdn || 0).toFixed(2)}%
+                          </span>
                         </div>
 
                         <div className="grid grid-cols-3 gap-3 mb-3">
                           <div className="bg-blue-50 p-3 rounded-lg">
                             <div className="text-xs text-blue-700">TKDN</div>
                             <div className="text-lg font-bold text-blue-600">
-                              {item.tkdnValue}%
+                              {parseFloat(item.tkdnValue || item.tkdn || 0).toFixed(2)}%
                             </div>
                           </div>
                           <div className="bg-purple-50 p-3 rounded-lg">
                             <div className="text-xs text-purple-700">BMP</div>
                             <div className="text-lg font-bold text-purple-600">
-                              {item.bmpValue}%
+                              {parseFloat(item.bmpValue || item.bmp || 0).toFixed(2)}%
                             </div>
                           </div>
                           <div className="bg-indigo-50 p-3 rounded-lg">
                             <div className="text-xs text-indigo-700">Total</div>
                             <div className="text-lg font-bold text-indigo-600">
-                              {item.totalValue}%
+                              {parseFloat(item.totalValue || ((parseFloat(item.tkdnValue || item.tkdn || 0)) + (parseFloat(item.bmpValue || item.bmp || 0)))).toFixed(2)}%
                             </div>
                           </div>
                         </div>
@@ -608,7 +635,7 @@ export default function DashboardPage() {
                             <span>Harga Barang Jadi:</span>
                             <span className="font-semibold">
                               Rp{' '}
-                              {parseFloat(item.final_price).toLocaleString(
+                              {(parseFloat(item.final_price || item.finalPrice) || 0).toLocaleString(
                                 'id-ID'
                               )}
                             </span>
@@ -617,7 +644,7 @@ export default function DashboardPage() {
                             <span>Komponen Luar Negeri:</span>
                             <span className="font-semibold text-red-600">
                               Rp{' '}
-                              {parseFloat(item.foreign_price).toLocaleString(
+                              {(parseFloat(item.foreign_price || item.foreignPrice) || 0).toLocaleString(
                                 'id-ID'
                               )}
                             </span>
@@ -666,33 +693,33 @@ export default function DashboardPage() {
                       <div className="w-2 h-2 bg-blue-600 rounded-full" />
                       <span className="text-gray-600">Diajukan:</span>
                       <span className="font-semibold">
-                        {formatDate(selectedSubmission.submittedAt)}
+                        {formatDate(selectedSubmission.timestamp || selectedSubmission.submitted_at)}
                       </span>
                     </div>
-                    {selectedSubmission.reviewedAt && (
+                    {selectedSubmission.reviewed_at && (
                       <div className="flex items-center space-x-3">
                         <div className="w-2 h-2 bg-purple-600 rounded-full" />
                         <span className="text-gray-600">Direview:</span>
                         <span className="font-semibold">
-                          {formatDate(selectedSubmission.reviewedAt)}
+                          {formatDate(selectedSubmission.reviewed_at)}
                         </span>
                       </div>
                     )}
-                    {selectedSubmission.acceptedAt && (
+                    {selectedSubmission.accepted_at && (
                       <div className="flex items-center space-x-3">
                         <div className="w-2 h-2 bg-green-600 rounded-full" />
                         <span className="text-gray-600">Diterima:</span>
                         <span className="font-semibold">
-                          {formatDate(selectedSubmission.acceptedAt)}
+                          {formatDate(selectedSubmission.accepted_at)}
                         </span>
                       </div>
                     )}
-                    {selectedSubmission.rejectedAt && (
+                    {selectedSubmission.rejected_at && (
                       <div className="flex items-center space-x-3">
                         <div className="w-2 h-2 bg-red-600 rounded-full" />
                         <span className="text-gray-600">Ditolak:</span>
                         <span className="font-semibold">
-                          {formatDate(selectedSubmission.rejectedAt)}
+                          {formatDate(selectedSubmission.rejected_at)}
                         </span>
                       </div>
                     )}

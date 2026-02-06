@@ -2,8 +2,8 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // Gunakan turbopack (default di Next.js 16)
-  turbopack: {},
+  // Disable turbopack temporarily to fix panic error
+  // turbopack: {},
   // Optimisasi untuk menghindari hydration errors
   experimental: {
     optimizePackageImports: ['lucide-react'],
