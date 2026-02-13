@@ -27,7 +27,7 @@ export default function Footer() {
             {/* About */}
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-linear-to-br from-blue-600 to-indigo-700">
                   <FileText className="w-6 h-6 text-white" />
                 </div>
                 <div>

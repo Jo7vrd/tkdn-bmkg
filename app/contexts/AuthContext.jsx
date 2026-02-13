@@ -8,14 +8,20 @@ const AuthContext = createContext({});
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
+
+  // Ensure client-only rendering to prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Load user dari localStorage saat mount
   useEffect(() => {
+    if (!mounted) return;
+
     const loadUser = () => {
       try {
-        if (typeof window === 'undefined') return;
-
         const savedUser = localStorage.getItem('user');
         const token = localStorage.getItem('token');
 
@@ -24,17 +30,15 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (error) {
         console.error('Error loading user:', error);
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('user');
-          localStorage.removeItem('token');
-        }
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
       } finally {
         setLoading(false);
       }
     };
 
     loadUser();
-  }, []);
+  }, [mounted]);
 
   // Login function
   const login = async (email, password) => {
@@ -140,6 +144,17 @@ export const AuthProvider = ({ children }) => {
     hasRole,
     isAuthenticated: !!user,
   };
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
+        </div>
+      </div>
+    );
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

@@ -27,7 +27,7 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, title, fileType }) {
   const isPDF = fileType && fileType.includes('pdf');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md bg-linear-to-br from-blue-50/30 via-indigo-50/30 to-purple-50/30 animate-fade-in">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b bg-linear-to-r from-blue-600 to-indigo-700">

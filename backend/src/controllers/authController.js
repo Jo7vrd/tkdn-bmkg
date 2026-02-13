@@ -85,6 +85,28 @@ export const register = async (req, res) => {
     });
   } catch (error) {
     console.error('Register error:', error);
+    
+    // Handle specific database errors
+    if (error.code === '23505') {
+      // Unique constraint violation
+      if (error.constraint === 'users_email_key') {
+        return res.status(400).json({
+          success: false,
+          message: 'Email sudah terdaftar',
+        });
+      } else if (error.constraint === 'users_username_key') {
+        return res.status(400).json({
+          success: false,
+          message: 'Username sudah terdaftar',
+        });
+      } else if (error.constraint === 'users_nip_key') {
+        return res.status(400).json({
+          success: false,
+          message: 'NIP sudah terdaftar',
+        });
+      }
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Terjadi kesalahan server',

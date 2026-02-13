@@ -465,8 +465,8 @@ export default function DashboardSubmissions({ initialSubmissions }) {
 
       {/* Detail Modal */}
       {showDetailModal && selectedSubmission && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 backdrop-blur-md bg-linear-to-br from-blue-50/30 via-indigo-50/30 to-purple-50/30 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             {/* Modal Header */}
             <div className="bg-linear-to-r from-blue-600 to-indigo-700 px-8 py-6 sticky top-0 z-10">
               <div className="flex items-center justify-between">
@@ -747,7 +747,7 @@ export default function DashboardSubmissions({ initialSubmissions }) {
 
       {/* Upload Modal */}
       {showUploadModal && (
-        <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 backdrop-blur-md bg-linear-to-br from-blue-50/30 via-indigo-50/30 to-purple-50/30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl">
             {/* Modal Header */}
             <div className="bg-linear-to-r from-blue-600 to-indigo-700 px-6 py-5 rounded-t-2xl">
@@ -857,7 +857,7 @@ export default function DashboardSubmissions({ initialSubmissions }) {
 
       {/* Confirmation Modal after file selected */}
       {showConfirmUpload && justificationFile && (
-        <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-60 p-4">
+        <div className="fixed inset-0 backdrop-blur-md bg-linear-to-br from-blue-50/30 via-indigo-50/30 to-purple-50/30 flex items-center justify-center z-60 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-sm w-full overflow-hidden">
             {/* Header */}
             <div className="bg-linear-to-r from-emerald-600 to-teal-700 px-4 py-3">

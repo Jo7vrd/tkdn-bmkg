@@ -413,7 +413,7 @@ export default function ReviewSubmission({ params }) {
       <div className="min-h-screen bg-gray-50 pt-16">
         {/* Confirmation Modal */}
         {showConfirmation && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
+        <div className="fixed inset-0 backdrop-blur-md bg-linear-to-br from-blue-50/30 via-indigo-50/30 to-purple-50/30 z-50 flex items-center justify-center px-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
@@ -1056,7 +1056,7 @@ export default function ReviewSubmission({ params }) {
       {/* Justification Review Modal */}
       {showJustificationModal && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 backdrop-blur-md bg-linear-to-br from-blue-50/30 via-indigo-50/30 to-purple-50/30 flex items-center justify-center z-50 p-4"
           onClick={() => setShowJustificationModal(false)}
         >
           <div

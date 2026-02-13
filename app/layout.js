@@ -1,9 +1,6 @@
 import './globals.css';
 import { Geist } from 'next/font/google';
-import Header from '../components/header';
-import Footer from '../components/footer';
-import { AuthProvider } from './contexts/AuthContext';
-import ErrorBoundary from '../components/ErrorBoundary';
+import ClientLayout from '../components/ClientLayout';
 
 const geist = Geist({ subsets: ['latin'] });
 
@@ -15,17 +12,9 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="id" suppressHydrationWarning>
-      <body className={geist.className} suppressHydrationWarning>
-        <ErrorBoundary>
-          <AuthProvider>
-            <div className="flex flex-col min-h-screen">
-              <Header />
-              <main className="grow">{children}</main>
-              <Footer />
-            </div>
-          </AuthProvider>
-        </ErrorBoundary>
+    <html lang="id">
+      <body className={geist.className}>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );
